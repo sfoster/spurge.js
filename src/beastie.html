@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Q-Tower</title>
+	<link href="./css/qtower.css"/>
+	<style>
+		#playground {
+			position: relative;
+			background: url('./assets/floorTexture.jpg');
+		}
+		#welcomeScreen {
+			display: none!important;
+		}
+		.point {
+			width: 2px;
+			height: 2px;
+			overflow: hidden;
+			background: #f00;
+			z-index: 2;
+		}
+		.sprite {
+			position: absolute;
+		}
+		.missile {
+			width: 24px;
+			height: 100px;
+			background: url('./assets/missile-sprite.png') no-repeat;
+			background-position: 0 0;
+			z-index: 1;
+			border: 1px solid yellow;
+			margin-top: -50px;
+			margin-left: -12px;
+		}
+		.wall {
+			position: absolute;
+			background: url('./assets/Path60Percent.png') no-repeat;
+		}
+	</style>
+	<script src="http://code.jquery.com/jquery-1.4.3.js"></script>
+	<script src="lib/jquery-css-transform.js"></script>
+	<script src="lib/jquery.gamequery-0.5.1.js"></script>
+	<script src="lib/curl.js"></script>
+	<script>
+		// some <script data-main=""> semantics to reduce this boilerplate 
+		console.log("requiring qtower");
+		require([
+			'lib/qtower',
+			'lib/lang',
+			'lib/base'
+		], function(bootstrap, lang, base){
+			console.log("bootstrap loaded");
+			// create beastie
+			//	with coords, etc. 
+			// create target
+			//	with coords etc.
+			// spin beastie to point at target
+			//	have it shoot stuff
+			window.qtower = base; 
+			
+			var missile = new base._Missile({
+				x: 100, y: 100, rotation: 67
+			});
+			missile.target = {x: 400, y: 200, };
+			missile.fire()
+			
+			// e.g. total width = 700; so unit width = 700/20;
+			var node = $("#playground"), 
+				width = parseInt(node.css("width"), 10),
+				height = parseInt(node.css("height"), 10);
+			
+			node.append(missile.render());
+				
+		}); 
+	</script>
+</head> 
+<body> 
+  <div id="playground" style="width: 600px; height: 600px;"> 
+	<div id="welcomeScreen" style="width: 700px; height: 250px; position: absolute; z-index: 100;"> 
+		<div style="position: absolute; top: 120px; width: 700px; color: white;"> 
+			<div id="loadingBar" style="position: relative; left: 100px; height: 15px; width: 0px; background: red;"></div><br /> 
+			<a style="cursor: pointer;" id="startbutton">click here to show the demo</a>
+		</div> 
+	</div> 
+</div> 
+  
+</body> 
+</html> 
