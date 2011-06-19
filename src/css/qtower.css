@@ -2,38 +2,36 @@ html, body {
     height: 100%;
     margin: 0; padding: 0;
     overflow: hidden;
+    background-color: #000;
 }
-#playground {
+#stage {
+    background-color: #333;
+    width: 900px;
+    height: 600px;
+	position: relative;
+	margin: 0 auto;
+}
+#map {
 	position: absolute;
-	top: 10px;
-	left: 50%;
+	top: 0;
+	left: 0;
 	width: 600px; 
-	height: 500px;
-	margin-left: -300px;
-	background: url('../assets/floorTexture.jpg');
+	height: 550px;
+	background: url('../assets/grass.jpg');
 }
-#welcomeScreen {
-	display: none!important;
-	top: 10px;
-	left: 50%;
-	width: 600px; 
-	height: 500px;
-	margin-left: -300px;
+#shopMenu {
+    position: absolute;
+	top: 0;
+	left: 605px;
+	width: 295px; 
+	height: 550px;
+    background-color: #000;
+    color: #eee;
 }
 .content {
     padding: 5px 10px;
 }
-#shopMenu {
-    position: absolute;
-	top: 10px;
-	left: 50%;
-	width: 600px; 
-	height: 500px;
-	margin-left: -300px;
-    background-color: #000;
-    color: #eee;
-    z-index: 10;
-}
+
 .point {
 	width: 2px;
 	height: 2px;

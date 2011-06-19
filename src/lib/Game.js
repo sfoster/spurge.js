@@ -36,7 +36,7 @@ define([
 			this._setupPlayer();
 			
 			rw.loadSprites(this.sprites, lang.bind(this, function() {
-				engine = rw.init('playground', {
+				engine = rw.init('map', {
 					x:this.width,
 					y:this.height,
 					FPS:40,
