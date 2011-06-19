@@ -6,7 +6,7 @@ define(['lib/rosewood', "lib/lang", "lib/config"], function (
 		console.log("npc module");
 	// define main enemy entities
 	var sprites = {}, 
-		assetsDir = config.assetsDir;
+		assetsDir = config.get("assetsDir");
 	
 	var Enemy = function(id) {
 		// nameIn, spriteIn, widthIn, heightIn

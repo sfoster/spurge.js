@@ -4,12 +4,12 @@ html, body {
     overflow: hidden;
     background-color: #000;
 }
-#stage {
+#container {
     background-color: #333;
     width: 900px;
     height: 600px;
 	position: relative;
-	margin: 0 auto;
+	margin: 10px auto 0 auto;
 }
 #map {
 	position: absolute;
@@ -25,8 +25,17 @@ html, body {
 	left: 605px;
 	width: 295px; 
 	height: 550px;
-    background-color: #000;
+	background: url('../assets/floor.jpg');
     color: #eee;
+}
+#toolbar {
+    position: absolute;
+	top: 550px;
+	left: 0;
+	width: 900px; 
+	height: 50px;
+	background: url('../assets/Path60percent.png');
+    color: #fff;
 }
 .content {
     padding: 5px 10px;

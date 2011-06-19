@@ -4,7 +4,7 @@ define([
 	], function (
 		rw,  // Rosewood module
 		lang, 
-		baseConfig, 
+		config, 
 		Game,
 		npc,
 		player
@@ -13,22 +13,17 @@ define([
 	// TODO: define concete Game instance here
 	var qtower = {};
 	
-	qtower.bootstrap = function(config) {
+	qtower.bootstrap = function() {
 		// Initialize the game:
 		// game logic is contained in the Game class
 		// 	stuff like setting up each round/level, menu population etc.
-		var mixin = lang.mixin, 
-			myConfig = mixin(mixin({}, baseConfig), config);
+		var mixin = lang.mixin;
+
+		config.set('keyTracker', true);
+		config.set('id', 'qtower');
 		
-		var game = qtower.game = new Game({
-			id: "qtower",
-			stageNode: config.stageNode,
-			height: config.stageNode.offsetHeight,
-			width: config.stageNode.offsetWidth,
-			config: myConfig,
-			keyTracker: true
-		});
-		console.log("/get new Game");
+		console.log("bootstrap config: ", config.get());
+		var game = qtower.game = new Game( { config: config.get() } );
 		qtower.start = qtower.game.start;
 		
 		game.onReady = function() {
@@ -43,6 +38,7 @@ define([
 			rw.newEnt( t1 )
 				.base.display(234, 234, 234)
 				.end();
+			console.log("/onReady");
 		}
 		game.setup(
 			npc, player

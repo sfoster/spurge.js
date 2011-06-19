@@ -5,7 +5,7 @@ define(['lib/rosewood', "lib/lang", "lib/config"], function (
 	){
 
 	var sprites = {}, 
-		assetsDir = config.assetsDir;
+		assetsDir = config.get("assetsDir");
 
 	// define main player/good-guy entities
 	var Tower = function(id) {

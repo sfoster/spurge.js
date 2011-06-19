@@ -14,22 +14,33 @@
 		require([
 			'lib/qtower',
 			'lib/lang',
-			'lib/base'
-		], function(qtower, lang, base){
-			
-			var node = document.getElementById("map");
-			qtower.bootstrap({
+			'lib/base',
+			'lib/config'
+		], function(qtower, lang, base, config){
+			var stageNode = $("#map"),
+				w = stageNode.css("width"),
+				h = stageNode.css("height");
+
+			config.set({
 				assetsDir: './assets',
-				stageNode: node
-			});
+				toolbarNode: document.getElementById("toolbar"),
+				menuNode: document.getElementById("shopMenu"),
+				bgNode: document.getElementById("bg"),
+				stageNode:  stageNode, 
+				width: parseInt(w, 10), 
+				height: parseInt(h, 10),
+			})
+			qtower.bootstrap(config);
 			window.qtower = qtower;
 		}); 
 	</script>
 </head> 
 <body> 
-<div id="stage">
+<div id="container">
+  <div id="bg"> </div> 
   <div id="map"> </div> 
   <div id="shopMenu"></div>
+  <div id="toolbar"></div>
 </div>
 </body> 
 </html> 

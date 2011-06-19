@@ -16,7 +16,7 @@ define([
 			var sprites = this.sprites, 
 				config = this.config, 
 				modules = Array.prototype.slice.call(arguments);
-			console.log("modules: ", modules);
+			console.log("game (this): ", this);
 			modules.forEach(function(mod){
 				if(mod.sprites) {
 					for(var i in mod.sprites) {
@@ -37,8 +37,8 @@ define([
 			
 			rw.loadSprites(this.sprites, lang.bind(this, function() {
 				engine = rw.init('map', {
-					x:this.width,
-					y:this.height,
+					x:this.config.width,
+					y:this.config.height,
 					FPS:40,
 					sequence:['ents','blit'],
 					keys:['ua','da','la','ra']
