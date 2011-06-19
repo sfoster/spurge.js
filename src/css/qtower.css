@@ -4,17 +4,32 @@ html, body {
     overflow: hidden;
 }
 #playground {
-	position: relative;
+	position: absolute;
+	top: 10px;
+	left: 50%;
+	width: 600px; 
+	height: 500px;
+	margin-left: -300px;
 	background: url('../assets/floorTexture.jpg');
 }
 #welcomeScreen {
 	display: none!important;
+	top: 10px;
+	left: 50%;
+	width: 600px; 
+	height: 500px;
+	margin-left: -300px;
 }
-#qtowerMenu {
+.content {
+    padding: 5px 10px;
+}
+#shopMenu {
     position: absolute;
-    top: 0;
-    width: 40%;
-    right: 0;
+	top: 10px;
+	left: 50%;
+	width: 600px; 
+	height: 500px;
+	margin-left: -300px;
     background-color: #000;
     color: #eee;
     z-index: 10;

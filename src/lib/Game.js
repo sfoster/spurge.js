@@ -71,11 +71,10 @@ define([
 				health: 100,
 				credits: 100
 			};
-			var tmpl = '<div id="qtowerMenu">${content}</div>', 
+			var shopNode = $("#shopMenu"); 
+			var tmpl = '<div class="content">${content}</div>', 
 				div = $(lang.templatize(tmpl, { content: '<h3>Menu goes here</h3>'}));
-			$(document.body).append(div);
-			console.log("menu:", div);
-			$(div).css("height", "400px");
+			shopNode.append(div);
 			console.log("TODO: setupMenu");
 		}, 
 		start: function() {

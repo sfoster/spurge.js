@@ -33,6 +33,7 @@ define([
 		
 		game.onReady = function() {
 			console.log("onReady");
+			// move this setup to the Game
 			var e1 = window.e1 = new npc.Enemy("enemy1");
 			rw.newEnt( e1 )
 				.base.display(234, 0, 234)
