@@ -1,0 +1,45 @@
+html, body {
+    height: 100%;
+    margin: 0; padding: 0;
+    overflow: hidden;
+}
+#playground {
+	position: relative;
+	background: url('../assets/floorTexture.jpg');
+}
+#welcomeScreen {
+	display: none!important;
+}
+#qtowerMenu {
+    position: absolute;
+    top: 0;
+    width: 40%;
+    right: 0;
+    background-color: #000;
+    color: #eee;
+    z-index: 10;
+}
+.point {
+	width: 2px;
+	height: 2px;
+	overflow: hidden;
+	background: #f00;
+	z-index: 2;
+}
+.sprite {
+	position: absolute;
+}
+.missile {
+	width: 24px;
+	height: 100px;
+	background: url('../assets/missile-sprite.png') no-repeat;
+	background-position: 0 0;
+	z-index: 1;
+	border: 1px solid yellow;
+	margin-top: -50px;
+	margin-left: -12px;
+}
+.wall {
+	position: absolute;
+	background: url('../assets/Path60Percent.png') no-repeat;
+}
