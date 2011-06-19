@@ -5,13 +5,67 @@ define(['lib/my-class/my.class', 'lib/lang'], function(my, lang){
 		base = {};
 	
 	var entities = base._entities = {};
+
+	var _GameEntity = base._GameEntity = my.Class({
+		id: "",
+		// base class for all objects we manage in the game
+		constructor: function(props) {
+			console.log("_GameEntity constructor");
+			if(props) {
+				mixin(this, props);
+			}
+			if(!this.id) {
+				this.id = uniqId("entity");
+			}
+			entities[this.id] = this;
+		},
+		destroy: function() {
+			this.node = null;
+			entities[this.id] = null;
+			delete entities[this.id];
+		},
+	});
 	
+	var _Container = function(Class){
+		mixin(Class.prototype, {
+			addChild: function(thing){
+				var children = this._children || (this._children = []);
+				children.push(thing)
+			},
+			removeChild: function(thing) {
+				var children = this._children || (this._children = []);
+				var idx = children.indexOf(thing);
+				if(idx >= 0) {
+					children.splice(idx, 1);
+				}
+			}
+		});
+		return Class;
+	}
+	var _Spritish = function(Class){
+		mixin(Class.prototype, {
+			x: 0, 
+			y: 0, 
+			rotation: 0,
+			addChild: function(thing){
+				var children = this._children || (this._children = []);
+				children.push(thing)
+			},
+			removeChild: function(thing) {
+				var children = this._children || (this._children = []);
+				var idx = children.indexOf(thing);
+				if(idx >= 0) {
+					children.splice(idx, 1);
+				}
+			}
+		});
+		return Class;
+	}
 	var _Missile = base._Missile = my.Class({
 		id: "",
-		x: -1, 
-		y: -1, 
-		rotation: 45,
 		damage: 1,
+		templateStr: '<div class="sprite missile" id="${id}">${id}</div>',
+		
 		// base class for all objects we manage in the game
 		constructor: function(props) {
 			console.log("_GameEntity constructor");
@@ -22,23 +76,20 @@ define(['lib/my-class/my.class', 'lib/lang'], function(my, lang){
 			console.log("Missile id: ", this.id, "rotation: ", this.rotation);
 			entities[this.id] = this;
 		},
-		destroy: function() {
-			this.node = null;
-			entities[this.id] = null;
-			delete entities[this.id];
-		},
-		render: function(node){
+		render: function(){
 			// $.html
-			var tmpl = '<div class="sprite missile" id="${id}">${id}</div>',
-				node = $(lang.templatize(tmpl, this));
+			var node = $(lang.templatize(this.templateStr, this))[0];
 				
-			node = node[0];
 			$(node).css({
-				'transform': lang.templatize('rotate(${rotation}deg)', { rotation: this.rotation }),
+				// 'transform': lang.templatize('rotate(${rotation}deg)', { rotation: this.rotation }),
 				top: this.y + "px",
 				left: this.x + "px",
 			});
-			console.log(this.id, "rotated: " + node.style.cssText);
+
+			if(this.hasOwnProperty("rotation")) {
+				console.log("rotate by: " + this.rotation);
+				$(node).rotate(this.rotation);
+			}
 			this.node = node;
 			return node;
 		},
@@ -54,12 +105,6 @@ define(['lib/my-class/my.class', 'lib/lang'], function(my, lang){
 				adj = x - originX, 
 				angle = 0;
 			
-			// var point = $("#playground").append( 
-			// 	lang.templatize(
-			// 		'<div class="point sprite" style="left: ${x}px; top: ${y}px"></div>', 
-			// 		{x: x, y: y}
-			// 	)
-			// );
 			var deg = opp/adj ? 
 				Math.round(Math.atan(opp/adj) * 180 / Math.PI) : 
 				0;
@@ -76,51 +121,33 @@ define(['lib/my-class/my.class', 'lib/lang'], function(my, lang){
 			}
 		}
 	});
-	var _GameEntity = base._GameEntity = my.Class({
-		id: "",
-		// base class for all objects we manage in the game
-		constructor: function(props) {
-			this._children = [];
-			this._childrenById = {};
-			console.log("_GameEntity constructor");
-			if(props) {
-				mixin(this, props);
+	var _Container = function(Class){
+		mixin(Class.prototype, {
+			addChild: function(thing){
+				var children = this._children || (this._children = []);
+				children.push(thing)
+			},
+			removeChild: function(thing) {
+				var children = this._children || (this._children = []);
+				var idx = children.indexOf(thing);
+				if(idx >= 0) {
+					children.splice(idx, 1);
+				}
 			}
-			if(!this.id) {
-				this.id = uniqId("entity");
-			}
-			entities[this.id] = this;
-		},
-		addChild: function(thing){
-			this.children.push(thing)
-		},
-		destroy: function() {
-			entities[this.id] = null;
-			delete entities[this.id];
-		},
-		removeChild: function(thing) {
-			var idx = this.children.indexOf(thing);
-			if(idx >= 0) {
-				this.children.splice(idx, 1);
-			}
-		}
-	});
+		});
+		return Class;
+	}
 	
 	// level, scene, chapter
-	var Scene = base.Scene = my.Class(_GameEntity, {
+	var Scene = base.Scene = _Container(my.Class(_GameEntity, {
 		onEnter: function() {},
 		onExit: function() {}
-	});
+	}));
 
 	// level, scene, chapter
-	var Game = base.Game = my.Class(_GameEntity, {
+	var Game = base.Game = _Container(my.Class(_GameEntity, {
 		constructor: function(props) {
 			Game.Super.call(this, props);
-			console.log("Game constructor");
-			$(this.node).playground({
-				height: this.height, 
-				width: this.width, 
-				keyTracker: true});
 			return this;
 		},
 		start: function() {
@@ -132,7 +159,7 @@ define(['lib/my-class/my.class', 'lib/lang'], function(my, lang){
 		end: function() {
 			
 		}
-	});
+	}));
 	
 	var Actor = base.Actor = my.Class(_GameEntity, {
 		health: -1,
