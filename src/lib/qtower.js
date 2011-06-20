@@ -1,17 +1,15 @@
 define([
-		'lib/rosewood', "lib/lang", "lib/config", "lib/Game",
-		'lib/npc', 'lib/player'
+		'lib/rosewood', "lib/lang", "lib/config", "lib/Game"
 	], function (
 		rw,  // Rosewood module
 		lang, 
 		config, 
-		Game,
-		npc,
-		player
+		Game
 	){
 	// bootstrap for the qtower game
 	// TODO: define concete Game instance here
 	var qtower = {};
+	window.rw = rw;
 	
 	qtower.bootstrap = function() {
 		// Initialize the game:
@@ -28,22 +26,7 @@ define([
 		
 		game.onReady = function() {
 			console.log("onReady");
-			// move this setup to the Game
-			var e1 = window.e1 = new npc.Enemy("enemy1");
-			rw.newEnt( e1 )
-				.base.display(234, 0, 234)
-				.end();
-
-			var t1 = window.t1 = new player.Tower("tower1");
-			rw.newEnt( t1 )
-				.base.display(234, 234, 234)
-				.end();
-			console.log("/onReady");
 		}
-		game.setup(
-			npc, player
-			// line up all the pieces
-		);
 
 		// sequence
 		// build map (at level x)
@@ -54,7 +37,6 @@ define([
 		//	shop: the menu bit where you pick what towers to deploy
 
 		//initialize the start button
-		var engine;
 		qtower.start = function(){
 			rw.start();
 		}; 
