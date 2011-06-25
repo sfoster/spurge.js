@@ -5,33 +5,111 @@ define([
 	rw,	// Rosewood module
 	lang	// lang utilities
 ){
-	
+	/* 
+		loop start/stop
+			running state
+				exit state stops run loop
+			pause state
+				exit state starts run loop
+		start screen: welcome, instructions etc. 
+		menu screen: pick tower, show credits
+			click to pick up, click to put down
+		round
+			setup: create the requested towers if not done already
+			plan the opponent attack/defense
+			create opponent towers, troops
+			go
+				no further user interaction
+				attack/defense is autonomous
+		main loop
+			set flags to trigger state change?
+			or cause immediate state change
+	*/
+
 	var endGame = true;
 	var gameMode = "round"; // menu|play|something
+	var modeRequest = "";
 	var counter = 0;
-	var RuleThing = function(){
-		this.base = new rw.Rule(1);
-		this.rule = function(){
-			switch(gameMode) {
-				case "menu":
-					displayMenu();
-					break;
-				case "round":
-					// plan moves
-					// prepare entity states for next update
-					break;
-			}
-			// counter
+	var modeMgr = (function(){
+		// large-grained state changes
+		var mgr = new function(){
+			this.current = null;
+			this.registry = {};
+			this.base = new rw.Rule(1);
+			this.setMode = function(mode){
+				this.current && this.current.exit();
+				mode = (typeof mode == "string") ? this.registry[mode] : mode;
+				if(!mode) {
+					throw new Error("Cant switch to unregistered game mode: ", mode);
+				}
+				this.current = mode; 
+				mode.enter();
+			};
+			this.register = function(mode, priority) {
+				console.log("register mode: ", mode);
+				this.registry[mode.name] = mode;
+				if(priority) {
+					modeRequest = mode.name;
+				}
+				return this;
+			},
+			this.rule = function(){
+				var name = modeRequest; 
+				modeRequest = "";
+				switch(name) {
+					case "menu":
+						this.setMode("menu");
+						break;
+					case "round":
+					case "running":
+						this.setMode("running");
+						// prepare entity states for next update
+						break;
+				}
+			};
 		};
-	};
+		return mgr;
+	})();
+	console.log("returning mgr: ", modeMgr);
+	
+	modeMgr
+		.register({
+			name: "running",
+			enter: function(){
+				console.log("enter running mode");
+				rw.start();
+			},
+			exit: function(){
+				console.log("exit running mode");
+				rw.stop();
+			}
+		})
+		.register({
+			name: "pause",
+			enter: function(){
+				console.log("enter pause mode");
+				rw.stop();
+			},
+			exit: function(){
+				console.log("exit pause mode");
+			}
+		}, true)
+		.register({
+			name: "menu",
+			enter: function(){
+				console.log("enter menu mode");
+				rw.stop();
+			},
+			exit: function(){
+				console.log("exit menu mode");
+			}
+		});
+
 	var Missile = function() {
 		this.base = new rw.Ent('fireball', 'fireball.f0', 32, 32);
 		this.frameidx = 0;
 		var lastIdx = 0;
 		this.update = function(X1, Y1, X2, Y2) {
-			if("round" != gameMode) {
-				return;
-			}
 			var idx = this.frameidx;
 			if(idx >= 15) {
 				idx = 0;
@@ -79,10 +157,11 @@ define([
 	}
 	var initGame = function(callback) {
 		callback = callback || function(){};
+		var imgdir = lang.modulePath("lib/rosewood", "../assets");
+		
 		rw.loadSprites({
-			bg: ['../../Rosewood/examples/evileye/sprites/bg.png', 480, 480],
 			fireball: {
-				src: './assets/explode1.png',
+				src: imgdir+'/explode1.png',
 				f0:  [32, 32, 0,   0],
 				f1:  [32, 32, 32,  0],
 				f2:  [32, 32, 64,  0],
@@ -99,9 +178,9 @@ define([
 				f13: [32, 32, 416, 0],
 				f14: [32, 32, 448, 0],
 				f15: [32, 32, 480, 0],
-			},
-			slow: ['../../Rosewood/examples/evileye/sprites/slow.gif', 30, 30]
+			}
 		}, function() {
+			
 			rw.init('playarea', {
 				x:480, 
 				y:480,
@@ -112,12 +191,12 @@ define([
 			})
 			.tilesOn(30,30)
 			.setFPS(30)
-			.newRule('myRule', new RuleThing("something"))
-			.newRule('endGame', new GameReset())
-			.newEnt({
-				base: new rw.Ent('bg','bg',480,480),
-				update: function() {}
-			}).base.display(0,0,-16).end()
+			.newRule('myRule', modeMgr)
+			// .newRule('endGame', new GameReset())
+			// .newEnt({
+			// 	base: new rw.Ent('bg','bg',480,480),
+			// 	update: function() {}
+			// }).base.display(0,0,-16).end()
 			.newEnt(new Missile('missile'))
 				.base.display(240,240,240).end()
 			.newEnt({
@@ -135,43 +214,13 @@ define([
 					}
 				}
 			}).base.display(0,16,0).end();
-			
-			
-			// .newEnt(new hero('hero'))
-			// 	.base.display(240,240,240).end();
-			// .newEnt({
-			// 	base: new rw.Ent('text', 'text', 100, 100),
-			// 	update: function() {
-			// 		var txt = ' Lag: '+Math.round(rw.getLag())+'  ';
-			// 		txt += 'Score: '+eyesDead+' ';
-			// 		txt += 'High Score: '+highScore+' ';
-			// 		if (fatima) txt += ' Fatima! ';
-			// 		if (blind) txt += ' Blind Eye ';
-			// 		if (slow) txt += ' Slow ';
-			// 		if (badLuck) txt += ' Bad Luck';
-			// 		this.text.text = txt;
-			// 	},
-			// 	text: {
-			// 		text: 'Score: ',
-			// 		form: 'fill',
-			// 		style: {
-			// 			font: '16px sans-serif',
-			// 			fill: '#000'
-			// 		}
-			// 	}
-			// }).base.display(0,16,0).end();
-			
 			callback();
-			// .start().saveState('init');
 		});
 	}
 	return {
 		initGame: initGame,
 		setMode: function(mode) {
-			gameMode = mode;
-			if(mode !== "menu") {
-				hideMenu();
-			}
+			modeRequest = mode;
 		},
 		start: function() {
 			rw.start().saveState('init');

@@ -1,0 +1,45 @@
+<html>
+	<head>
+		<script src="../lib/curl.js"></script>
+		<script>
+			// some <script data-main=""> semantics to reduce this boilerplate 
+			console.log("requiring qtower");
+			require({
+				baseUrl: '..',
+				paths: {
+					assets: '../assets'
+				}
+			}, [
+				'lib/rosewood',
+				'lib/lang',
+				'lib/tester'
+			], function(rw, lang, game){
+				window.rw = rw;
+				window.game = game;
+				game.initGame(function(){
+					game.start();
+				});
+				// game.start();
+			}); 
+		</script>
+	</head>
+	<body style="margin:0;padding:0;">
+		<div id="playarea" style="float:left;margin-right:10px;"></div>
+		Change FPS
+		<input name="fps" id="fps" type="text" value="30" onchange="rw.setFPS(document.getElementById('fps').value);">
+		<br>
+		<input type="button" value="start" onclick="window.game.start();">
+		&nbsp;
+		<input type="button" value="stop" onclick="rw.stop();">
+		&nbsp;
+		<input type="button" value="menu mode" onclick="game.setMode('menu');">
+		&nbsp;
+		<input type="button" value="round mode" onclick="game.setMode('round');">
+		<div id="menu" style="display:none">
+			The menu
+		</div>
+		<div id="testImg">
+			The menu
+		</div>
+	</body>
+</html>
