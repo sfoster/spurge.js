@@ -1,9 +1,11 @@
 define([
 	'lib/rosewood',
-	'lib/lang'
+	'lib/lang',
+	'lib/npc'
 ], function (
 	rw,	// Rosewood module
-	lang	// lang utilities
+	lang,	// lang utilities
+	npc	// npc entitites
 ){
 	/* 
 		loop start/stop
@@ -37,6 +39,7 @@ define([
 			this.registry = {};
 			this.base = new rw.Rule(1);
 			this.setMode = function(mode){
+				console.log("setMode: ", mode);
 				this.current && this.current.exit();
 				mode = (typeof mode == "string") ? this.registry[mode] : mode;
 				if(!mode) {
@@ -54,7 +57,7 @@ define([
 				return this;
 			},
 			this.rule = function(){
-				var name = modeRequest; 
+					var name = modeRequest; 
 				modeRequest = "";
 				switch(name) {
 					case "menu":
@@ -71,72 +74,60 @@ define([
 		return mgr;
 	})();
 	console.log("returning mgr: ", modeMgr);
+	var sprites = {};
 	
 	modeMgr
 		.register({
 			name: "running",
 			enter: function(){
+				rw.loadState("running");
 				console.log("enter running mode");
-				rw.start();
+				console.log("remove all ents from the run loop")
+				//rw.start();
 			},
 			exit: function(){
 				console.log("exit running mode");
-				rw.stop();
+				console.log("restore all ents from the run loop")
+				//rw.stop();
 			}
-		})
+		}, 1)
 		.register({
 			name: "pause",
 			enter: function(){
+				rw.saveState("running");
 				console.log("enter pause mode");
-				rw.stop();
+				rw.loadState("paused");
 			},
 			exit: function(){
 				console.log("exit pause mode");
 			}
 		}, true)
 		.register({
+			// ...
+			enter: function(){
+				if (endGame) {
+					endGame = false;
+					heroX = 0;
+					heroY = 0;
+					heroXTile = 0;
+					heroYTile = 0;
+					rw.wipeAll().stop(function(){
+						rw.loadState('init').start()
+					});
+				}
+			}
+		})
+		.register({
 			name: "menu",
 			enter: function(){
 				console.log("enter menu mode");
-				rw.stop();
+				//rw.stop();
 			},
 			exit: function(){
 				console.log("exit menu mode");
 			}
 		});
 
-	var Missile = function() {
-		this.base = new rw.Ent('fireball', 'fireball.f0', 32, 32);
-		this.frameidx = 0;
-		var lastIdx = 0;
-		this.update = function(X1, Y1, X2, Y2) {
-			var idx = this.frameidx;
-			if(idx >= 15) {
-				idx = 0;
-			} else {
-				idx += 1/2;
-			}
-			this.frameidx = idx;
-			this.base.changeSprite('fireball.f'+Math.floor(idx));
-		}
-	}
-
-	var GameReset = function() {
-		this.base = new rw.Rule(2);
-		this.rule = function() {
-			if (endGame) {
-				endGame = false;
-				heroX = 0;
-				heroY = 0;
-				heroXTile = 0;
-				heroYTile = 0;
-				rw.wipeAll().stop(function(){
-					rw.loadState('init').start()
-				});
-			}
-		}
-	};
-	
 	var menuNode = null, 
 		menuIsDisplayed = false;
 	var displayMenu = function() {
@@ -155,40 +146,30 @@ define([
 		menuNode && (menuNode.style.display = "none");
 		menuIsDisplayed = false;
 	}
+	var settings = {
+		x:480, 
+		y:480,
+		FPS:30,
+		mouse:true,
+		keys:['ua','da','la','ra'],
+		sequence:['rule','ents','cols','kill','rule','blit','rule']
+	};
+	
 	var initGame = function(callback) {
 		callback = callback || function(){};
 		var imgdir = lang.modulePath("lib/rosewood", "../assets");
-		
-		rw.loadSprites({
-			fireball: {
-				src: imgdir+'/explode1.png',
-				f0:  [32, 32, 0,   0],
-				f1:  [32, 32, 32,  0],
-				f2:  [32, 32, 64,  0],
-				f3:  [32, 32, 96,  0],
-				f4:  [32, 32, 128, 0],
-				f5:  [32, 32, 160, 0],
-				f6:  [32, 32, 192, 0],
-				f7:  [32, 32, 224, 0],
-				f8:  [32, 32, 256, 0],
-				f9:  [32, 32, 288, 0],
-				f10: [32, 32, 320, 0],
-				f11: [32, 32, 352, 0],
-				f12: [32, 32, 284, 0],
-				f13: [32, 32, 416, 0],
-				f14: [32, 32, 448, 0],
-				f15: [32, 32, 480, 0],
+
+		var modules = [npc];
+		console.log("game (this): ", this);
+		modules.forEach(function(mod){
+			if(mod.sprites) {
+				lang.mixin(sprites, mod.sprites);
 			}
-		}, function() {
+		});
+		
+		rw.loadSprites(sprites, function() {
 			
-			rw.init('playarea', {
-				x:480, 
-				y:480,
-				FPS:30,
-				mouse:false,
-				keys:['ua','da','la','ra'],
-				sequence:['rule','ents','cols','kill','rule','blit','rule']
-			})
+			rw.init('playarea', settings)
 			.tilesOn(30,30)
 			.setFPS(30)
 			.newRule('myRule', modeMgr)
@@ -197,12 +178,14 @@ define([
 			// 	base: new rw.Ent('bg','bg',480,480),
 			// 	update: function() {}
 			// }).base.display(0,0,-16).end()
-			.newEnt(new Missile('missile'))
+			.newEnt(new npc.Missile('missile', gameExports))
 				.base.display(240,240,240).end()
+			.newEnt(new npc.Enemy('enemy1', gameExports))
+				.base.display(40,40,240).end()
 			.newEnt({
 				base: new rw.Ent('text', 'text', 100, 100),
 				update: function() {
-					var str = lang.templatize('Frame Count: ${count}', { count: counter});
+					var str = lang.templatize('Frame Count: ${count}', { count: +(new Date)});
 					this.text.text = str;
 				},
 				text: {
@@ -217,8 +200,16 @@ define([
 			callback();
 		});
 	}
-	return {
+	var gameExports = {
 		initGame: initGame,
+		getTarget: function(){
+			var t = {};
+			t.x = (typeof rw.mouse.x == "function") ? rw.mouse.x() : Math.round(settings.x/2); 
+			t.y = (typeof rw.mouse.y == "function") ? rw.mouse.y() : Math.round(settings.y/2); 
+			console.log("returning target: x: %s, y: %s", t.x, t.y);
+			return t;
+			// return { x: 100, y: 100 };
+		},
 		setMode: function(mode) {
 			modeRequest = mode;
 		},
@@ -229,4 +220,5 @@ define([
 			rw.stop();
 		}
 	};
+	return gameExports;
 });
