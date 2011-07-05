@@ -11,7 +11,7 @@ html, body {
 	position: relative;
 	margin: 10px auto 0 auto;
 }
-#map {
+#map, #playarea {
 	position: absolute;
 	top: 0;
 	left: 0;
