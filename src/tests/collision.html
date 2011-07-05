@@ -1,0 +1,106 @@
+<html>
+	<head>
+		<link href="../css/qtower.css" type="text/css" rel="StyleSheet"/>
+		<script src="../lib/jquery-1.6.1.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../lib/curl.js"></script>
+		<script>
+			// some <script data-main=""> semantics to reduce this boilerplate 
+			console.log("requiring qtower");
+			require({
+				baseUrl: '..',
+				paths: {
+					assets: '../assets'
+				}
+			}, [
+				'lib/rosewood',
+				'lib/config',
+				'lib/npc',
+				'lib/lang'
+			], function(rw, config, npc, lang){
+				window.rw = rw;
+				var stageNode = $("#playarea"),
+					w = stageNode.css("width"),
+					h = stageNode.css("height");
+				console.log("stage dimension: ", w, h);
+				config.set({
+					assetsDir: './assets',
+					stageNode:  stageNode, 
+					mapWidth: parseInt(w, 10), 
+					mapHeight: parseInt(h, 10),
+				});
+				var settings = {
+					x:config.get("mapWidth"), 
+					y:config.get("mapHeight"),
+					FPS:1,
+					mouse:true,
+					keys:['ua','da','la','ra'],
+					sequence:['rule','ents','cols','kill','rule','blit','rule']
+				};
+
+				var initGame = function(callback) {
+					callback = callback || function(){};
+					var sprites = {};
+					var imgdir = lang.modulePath("lib/rosewood", "../assets");
+
+					var modules = [npc];
+					modules.forEach(function(mod){
+						if(mod.sprites) {
+							lang.mixin(sprites, mod.sprites);
+						}
+					});
+
+					rw.loadSprites(sprites, function() {
+						console.log("loadSprites callback");
+						rw.init('playarea', settings)
+						.tilesOn(30,30)
+						.newEnt(new npc.Missile('missile', {}))
+							.base.display(240,240,240).end()
+						.newEnt(new npc.Enemy('enemy1', {}))
+							.base.display(40,40,240).end()
+						.newEnt({
+							base: new rw.Ent('text', 'text', 100, 100),
+							update: function() {
+								var str = lang.templatize('Frame Count: ${count}', { count: +(new Date)});
+								this.text.text = str;
+							},
+							text: {
+								text: 'Frame Count: ',
+								form: 'fill',
+								style: {
+									font: '16px sans-serif',
+									fill: '#000'
+								}
+							}
+						}).base.display(0,16,0).end();
+						console.log("loadSprites callback");
+						callback();
+					});
+				}
+				initGame(function(){
+					console.log("init callback, starting game loop");
+					rw.start();
+				});
+				// game.start();
+			}); 
+		</script>
+	</head>
+	<body style="margin:0;padding:0;">
+		<div id="playarea" style="float:left;margin-right:10px;"></div>
+		Change FPS
+		<input name="fps" id="fps" type="text" value="30" onchange="rw.setFPS(document.getElementById('fps').value);">
+		<br>
+		<input type="button" value="start" onclick="window.game.start();">
+		&nbsp;
+		<input type="button" value="stop" onclick="rw.stop();">
+		&nbsp;
+		<input type="button" value="menu mode" onclick="game.setMode('menu');">
+		&nbsp;
+		<input type="button" value="round mode" onclick="game.setMode('round');">
+		<div id="menu" style="display:none">
+			The menu
+		</div>
+		<div id="testImg">
+			The menu
+		</div>
+	</body>
+</html>
