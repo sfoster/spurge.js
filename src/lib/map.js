@@ -6,7 +6,7 @@ define(['lib/rosewood', "lib/lang", "lib/config"], function (
 		console.log("map module");
 	// define main enemy entities
 	var sprites = {}, 
-		assetsDir = config.get("assetsDir");;
+		assetsDir = lang.get("assetsDir");;
 
 	var layout = ''
 		+ "#-#---#-#-#-"
@@ -42,8 +42,12 @@ define(['lib/rosewood', "lib/lang", "lib/config"], function (
 	function render(layout) {
 		var curX = 0, 
 			curY = 0,
-			w = config.get("assetsDir"), 	// todo: get from config
-			y = 50;
+			totalWidth = config.get("mapWidth"),
+			totalHeight = config.get("mapHeight");
+		
+		var x = totalWidth / layout[0].length, 
+			y = totalHeight / layout.length;
+			
 		layout.forEach(function(row){
 			row.forEach(function(col){
 				
@@ -51,7 +55,7 @@ define(['lib/rosewood', "lib/lang", "lib/config"], function (
 			curY += y;
 		})
 	}
-	sprites['wall'] = ['${assetsDir}/Path.png', 50, 50];
+	sprites['wall'] = [assetsDir + '/Path.png', x, y];
 
 	return {
 		sprites: sprites,
