@@ -11,38 +11,48 @@
 	<script>
 		// some <script data-main=""> semantics to reduce this boilerplate 
 		console.log("requiring qtower");
-		require([
-			'lib/qtower',
+		require({
+			paths: {
+				assets: './assets'
+			}
+		},[
+			'lib/rosewood',
 			'lib/lang',
-			'lib/base',
-			'lib/config'
-		], function(qtower, lang, base, config){
-			var stageNode = $("#map"),
+			'lib/config',
+			'lib/tester'
+		], function(rw, lang, config, game){
+			var stageNode = $("#playarea"),
 				w = stageNode.css("width"),
 				h = stageNode.css("height");
-
+			console.log("stage dimension: ", w, h);
 			config.set({
 				assetsDir: './assets',
 				toolbarNode: document.getElementById("toolbar"),
 				menuNode: document.getElementById("shopMenu"),
 				bgNode: document.getElementById("bg"),
 				stageNode:  stageNode, 
-				width: parseInt(w, 10), 
-				height: parseInt(h, 10),
-			})
-			qtower.bootstrap(config);
-			window.qtower = qtower;
+				mapWidth: parseInt(w, 10), 
+				mapHeight: parseInt(h, 10),
+			});
+			window.rw = rw;
+			window.game = game;
+			game.initGame(function(){
+				game.start();
+			});
 		}); 
 	</script>
 </head> 
 <body> 
 <div id="container">
   <div id="bg"> </div> 
-  <div id="map"> </div> 
+  <div id="playarea"> </div> 
   <div id="shopMenu"></div>
   <div id="toolbar">
-  	<button onclick="qtower.rw.start()">Start</button>
-  	<button onclick="qtower.rw.stop()">Stop</button>
+		<input type="button" value="start" onclick="window.game.start();">
+		&nbsp;
+		<input type="button" value="stop" onclick="rw.stop();">
+		&nbsp;
+		<input type="button" value="menu mode" onclick="game.setMode('menu');">
   </div>
 </div>
 </body> 

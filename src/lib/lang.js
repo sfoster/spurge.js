@@ -33,6 +33,22 @@ define([], function(){
 		}
 		return obj;
 	};
+
+	var hasProp = Object.prototype.hasOwnProperty;
+	
+	var extend = function(child, parent) {
+		// copy over static methods/properties
+		for (var key in parent) {
+			if (hasProp.call(parent, key)) {
+				child[key] = parent[key];
+			}
+		}
+		function ctor() { this.constructor = child; }
+		ctor.prototype = parent.prototype;
+		child.prototype = new ctor;
+		child.superclass = parent.prototype;
+		return child;
+	};
 	
 	var templatize = function(tmpl, data) {
 		var str = tmpl.replace(reTmpl, function(m, name, filter, op, operand){
@@ -99,7 +115,8 @@ define([], function(){
 		bind: bind,
 		createObject: createObject,
 		templatize: templatize,
-		modulePath: modulePath
+		modulePath: modulePath,
+		extend: extend
 	};
 	
 	

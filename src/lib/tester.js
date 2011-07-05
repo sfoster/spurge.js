@@ -1,11 +1,13 @@
 define([
 	'lib/rosewood',
 	'lib/lang',
-	'lib/npc'
+	'lib/npc',
+	'lib/config'
 ], function (
 	rw,	// Rosewood module
 	lang,	// lang utilities
-	npc	// npc entitites
+	npc,	// npc entitites
+	config	// game config
 ){
 	/* 
 		loop start/stop
@@ -147,8 +149,8 @@ define([
 		menuIsDisplayed = false;
 	}
 	var settings = {
-		x:480, 
-		y:480,
+		x:config.get("mapWidth"), 
+		y:config.get("mapHeight"),
 		FPS:30,
 		mouse:true,
 		keys:['ua','da','la','ra'],
@@ -178,9 +180,9 @@ define([
 			// 	base: new rw.Ent('bg','bg',480,480),
 			// 	update: function() {}
 			// }).base.display(0,0,-16).end()
-			.newEnt(new npc.Missile('missile', gameExports))
+			.newEnt(new npc.Missile('missile', { getTarget: gameExports.getTarget }))
 				.base.display(240,240,240).end()
-			.newEnt(new npc.Enemy('enemy1', gameExports))
+			.newEnt(new npc.Enemy('enemy1', { getTarget: gameExports.getTarget }))
 				.base.display(40,40,240).end()
 			.newEnt({
 				base: new rw.Ent('text', 'text', 100, 100),
@@ -206,7 +208,7 @@ define([
 			var t = {};
 			t.x = (typeof rw.mouse.x == "function") ? rw.mouse.x() : Math.round(settings.x/2); 
 			t.y = (typeof rw.mouse.y == "function") ? rw.mouse.y() : Math.round(settings.y/2); 
-			console.log("returning target: x: %s, y: %s", t.x, t.y);
+			// console.log("returning target: x: %s, y: %s", t.x, t.y);
 			return t;
 			// return { x: 100, y: 100 };
 		},

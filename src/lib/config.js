@@ -1,6 +1,9 @@
 define(["lib/lang"], function(lang){
 	var conf = {
-		REFRESH_RATE: 30
+		REFRESH_RATE: 30,
+		assetsDir: lang.modulePath("lib/config", "../assets"),
+		mapWidth: 640,
+		mapHeight: 480
 	};
 	
 	return {
