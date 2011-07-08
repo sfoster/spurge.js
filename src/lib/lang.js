@@ -1,9 +1,12 @@
-define([], function(){
+define(['lib/compose'], function(Compose){
 	console.log("lang module");
 	
 	var _empty = {}, 
-		reTmpl = /\$\{(\w+)(([\/\|\*\+\-])(\w+))?\}/g; 
-		
+		reTmpl = /\$\{(\w+)(([\/\|\*\+\-])(\w+))?\}/g, 
+		undef = (function(){ return; })(), 
+		undefinedThis = (function(){
+	        return this; // this depends on strict mode
+	    })();
 
 	var mixin = function(thing, props) {
 		for(var key in props) {
@@ -35,21 +38,7 @@ define([], function(){
 	};
 
 	var hasProp = Object.prototype.hasOwnProperty;
-	
-	var extend = function(child, parent) {
-		// copy over static methods/properties
-		for (var key in parent) {
-			if (hasProp.call(parent, key)) {
-				child[key] = parent[key];
-			}
-		}
-		function ctor() { this.constructor = child; }
-		ctor.prototype = parent.prototype;
-		child.prototype = new ctor;
-		child.superclass = parent.prototype;
-		return child;
-	};
-	
+
 	var templatize = function(tmpl, data) {
 		var str = tmpl.replace(reTmpl, function(m, name, filter, op, operand){
 			var val = data[name];
@@ -91,8 +80,8 @@ define([], function(){
 				console.log("match: ", match);
 				a.href = match[1];
 				// strip off the module filename (dirname(lib/module.js) -> lib)
-				dirname = a.pathname.replace(/\/[^\/]+$/, '')
-				console.log("dirname: ", dirname);
+				dirname = a.pathname.replace(/\/[^\/]+$/, '');
+				//console.log("dirname: ", dirname);
 				break;
 			}
 		}
@@ -116,7 +105,8 @@ define([], function(){
 		createObject: createObject,
 		templatize: templatize,
 		modulePath: modulePath,
-		extend: extend
+		// ensure Compose's this is the default/undefined 'this' else it goes wobbly
+		Compose: mixin(bind(undefinedThis, Compose), Compose)
 	};
 	
 	
