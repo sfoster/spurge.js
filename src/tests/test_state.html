@@ -1,0 +1,47 @@
+<html>
+	<head>
+		<script src="../lib/curl.js"></script>
+		<script>
+			// some <script data-main=""> semantics to reduce this boilerplate 
+			require({
+				baseUrl: '..',
+				paths: {
+					assets: '../assets'
+				}
+			}, [
+				'lib/state',
+				'lib/lang',
+				'lib/compose',
+				'lib/state',
+			], function(rw, lang, Compose, Stateful){
+				var _Game = Compose({
+					awake: false
+				}, Stateful, function(){
+					console.log("state test ctor");
+					this.registerState("awake", {
+						type: "awakeness",
+						enter: function(){ console.log(this.name+ "state enter"); },
+						exit: function(){ console.log(this.name+ "state exit"); },
+					});
+					this.registerState("asleep", {
+						type: "awakeness",
+						active: true,
+						enter: function(){ console.log(this.name+ " state enter"); },
+						exit: function(){ console.log(this.name+ "state exit"); },
+					});
+					this.registerState("happy", {
+						enter: function(){ console.log(this.name+ " state enter"); },
+						exit: function(){ console.log(this.name+ "state exit"); },
+					})
+				}); 
+				var game = window.game = new _Game;
+				
+				
+				// game.start();
+			}); 
+		</script>
+	</head>
+	<body>
+		<div id="playarea" style="float:left;margin-right:10px;"></div>
+	</body>
+</html>
