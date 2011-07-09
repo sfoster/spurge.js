@@ -1,33 +1,13 @@
 define([
 		'lib/lang',
-		'lib/compose'
-	], function (lang, Compose){
+		'lib/compose',
+		'lib/Evented',
+		'lib/state',
+	], function (lang, Compose, Evented, state){
 	
 	var after = Compose.after, 
 		before = Compose.before, 
 		from = Compose.from;
-
-	function createState(name, pName){
-		return {
-			enter: function(args){
-				this[pName]=true;
-				var topic = name + "/enter";
-				this.raiseEvent(topic, args);
-			}, 
-			exit: function(){
-				this[pName] = false;
-				var topic = name + "/exit";
-				this.raiseEvent(topic, args);
-			}
-		};
-	};
-	var states = {
-		Alive: createState('alive', "isAlive"),
-		Active: createState('active', "isActive"),
-		// Running: createState('running', "isRunning"),
-		// Idle: createState('idle', "isIdle"),
-		// Walking: createState('walking', "isWalking")
-	};
 
 	var Renderable = {
 		width: 0,
@@ -52,33 +32,9 @@ define([
 			}
 		}
 	};
-	var Evented = {
-		_events: {}, 
-		addEventListener: function(name, fn) {
-			// pubsub thing
-			var events = this._events, 
-				listeners = events[name] || (events[name] = []);
-			listeners.push(fn);
-			return {
-				type: name,
-				remove: function(){
-					var idx = listeners.indexOf(fn);
-					if(idx >= 0) {
-						listeners.splice(idx, 1);
-					}
-				}
-			};
-		},
-		raiseEvent: function(name, payload){
-			var listeners = this._events[name] || [];
-			payload = payload || {};
-			payload.type = name;
-			for(var i=0; i<listeners.length; i++){
-				listeners[i](payload);
-			}
-		}
-	};
-	
+
+	// a thing which has a sprite assocated w. it
+	// ??
 	var Sprited = Compose(Renderable, {
 		width: 0,
 		height: 0,
@@ -102,9 +58,36 @@ define([
 	};
 	
 	var Entity = Compose(Compose, Renderable);
+	
+	// a Scene should prep one of more layers to place stuff on
+	// The provides a parentNode for each
 	var Scene = Compose(Compose, Renderable, Evented, states.Active, {
 		start: from(states.Active, "enter"),
-		stop: from(states.Active, "exit")
+		stop: from(states.Active, "exit"),
+		var sprites = this.sprites, 
+			config = this.config, 
+			modules = [npc, player];
+		console.log("game (this): ", this);
+		init: function(){
+			modules.forEach(function(mod){
+				if(mod.sprites) {
+					for(var i in mod.sprites) {
+						sprites[i] = mod.sprites[i];
+						console.log("setup sprite in module: " + i);
+						// populate any templated paths with our config
+						if(sprites[i][0].indexOf('${') > -1){
+							sprites[i][0] = lang.templatize(sprites[i][0], config);
+						}
+					}
+				}
+			});
+		},
+		onEnter: function(){
+			// create/place all layers
+			// fire of events to all entities
+		}
+		onEnter: function(){
+		}
 	});
 	
 	var Actor = Compose(Entity, Sprited, {

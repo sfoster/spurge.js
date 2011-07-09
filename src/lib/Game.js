@@ -1,54 +1,41 @@
 define([
-	'lib/rosewood', 
-	'lib/my-class/my.class', 
-	'lib/base',
-	'lib/lang',
-	'lib/npc', 
-	'lib/player'
-], function (rw, my, base, lang, npc, player){
-	var engine;
-	var Game = my.Class(base.Game, {
+		'lib/lang',
+		'lib/compose',
+		'lib/Evented'
+		'lib/state'
+	], function (lang, Compose, Evented, State){
+
+	var engine; // need one
+
+	var after = Compose.after, 
+		before = Compose.before, 
+		from = Compose.from;
+
+
+	var Game = function(){
+		this.scenes = {};
+	};
+	 Compose(Game, {
 		config: null,
 		sprites: null,
-		constructor: function(props) {
-			Game.Super.call(this, props);
-			this.sprites = {};
-		},
 		setup: function(){
-			var sprites = this.sprites, 
-				config = this.config, 
-				modules = [npc, player];
-			console.log("game (this): ", this);
-			modules.forEach(function(mod){
-				if(mod.sprites) {
-					for(var i in mod.sprites) {
-						sprites[i] = mod.sprites[i];
-						console.log("setup sprite in module: " + i);
-						// populate any templated paths with our config
-						if(sprites[i][0].indexOf('${') > -1){
-							sprites[i][0] = lang.templatize(sprites[i][0], config);
-						}
-					}
-				}
-			});
-			
 			console.log("setup sprites: ", sprites);
 			
 			this._setupMenu();
 			this._setupMap();
 			this._setupPlayer();
 			
-			rw.loadSprites(this.sprites, lang.bind(this, function() {
-				engine = this.engine = rw.init('map', {
-					x:this.config.width,
-					y:this.config.height,
-					FPS:40,
-					sequence:['ents','blit'],
-					keys:['ua','da','la','ra']
-				});
-				this.postLoad();
-				console.log("rw init and newEnt called");
-			}));
+			// rw.loadSprites(this.sprites, lang.bind(this, function() {
+			// 	engine = this.engine = rw.init('map', {
+			// 		x:this.config.width,
+			// 		y:this.config.height,
+			// 		FPS:40,
+			// 		sequence:['ents','blit'],
+			// 		keys:['ua','da','la','ra']
+			// 	});
+			// 	this.postLoad();
+			// 	console.log("rw init and newEnt called");
+			// }));
 		},
 		postLoad: function() {
 			function TestRule(){
@@ -58,10 +45,10 @@ define([
 			}
 
 			// move this setup to the Game
-			var e1 = window.e1 = new npc.Enemy("enemy1");
-			rw.newEnt( e1 )
-				.base.display(234, 0, 234)
-				.end();
+			// var e1 = window.e1 = new npc.Enemy("enemy1");
+			// rw.newEnt( e1 )
+			// 	.base.display(234, 0, 234)
+			// 	.end();
 
 			var t1 = window.t1 = new player.Tower("tower1");
 			rw.newEnt( t1 )
