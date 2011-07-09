@@ -73,7 +73,7 @@ define(['lib/compose'], function(Compose){
 			match,
 			re = new RegExp('^(.*/?' + mod + ")\\.js"), 
 			a = document.createElement("a"), 
-			dirname; 
+			dirname = ""; 
 		console.log("matching with: ", re.source);
 		for(var i=0; i<scripts.length; i++){
 			if(scripts[i].src && (match = re.exec(scripts[i].src))) {
