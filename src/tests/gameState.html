@@ -10,10 +10,12 @@
 					assets: '../assets'
 				}
 			}, [
-				'lib/Game',
-				'lib/lang'
-			], function(Game, lang){
-				window.game = new Game;
+				'lib/lang',
+				'game/app',
+			], function(lang, game){
+				window.game = game;
+				console.log("Setting gameNode in config");
+				game.config.set("gameNode", document.getElementById("playarea"));
 				game.setup(function(){
 					game.start();
 				});
@@ -22,17 +24,15 @@
 		</script>
 	</head>
 	<body style="margin:0;padding:0;">
-		<div id="playarea" style="float:left;margin-right:10px;"></div>
+		<div id="playarea" style="height: 200px; margin-right:10px;"></div>
 		Change FPS
 		<input name="fps" id="fps" type="text" value="30" onchange="rw.setFPS(document.getElementById('fps').value);">
 		<br>
-		<input type="button" value="start" onclick="window.game.start();">
+		<input type="button" value="start" onclick="game.enterState('playing');">
 		&nbsp;
-		<input type="button" value="stop" onclick="rw.stop();">
+		<input type="button" value="stop" onclick="game.enterState('ended');">
 		&nbsp;
-		<input type="button" value="menu mode" onclick="game.setMode('menu');">
-		&nbsp;
-		<input type="button" value="round mode" onclick="game.setMode('round');">
+		<input type="button" value="menu mode" onclick="game.enterState('menu');">
 		<div id="menu" style="display:none">
 			The menu
 		</div>

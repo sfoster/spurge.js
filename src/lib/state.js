@@ -32,6 +32,7 @@ define([
 					altState.active = false;
 				}
 			}
+			console.log("entering state: ", state.foo);
 			state.active = true;
 			state.enter && state.enter();
 		},
@@ -40,7 +41,7 @@ define([
 			// exclusive states
 			// set("running", true); implicitly sets "walking" to false first
 			
-			console.log("register state: " + name, this.__statesByType);
+			// console.log("register state: " + name, this.__statesByType);
 			var state = lang.createObject({
 				active: false,
 				type: name, // default to name==type
@@ -75,7 +76,7 @@ define([
 			};
 
 			// create hooks for this state
-			console.log("defining hooks for: ", hookName, this);
+			// console.log("defining hooks for: ", hookName, this);
 			this[hookName] = function(){
 				console.log(hookName);
 			};
