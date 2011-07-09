@@ -1,7 +1,7 @@
 define([
 		'lib/lang',
 		'lib/compose',
-		'lib/Evented',
+		'lib/event',
 		'lib/state',
 	], function (lang, Compose, Evented, state){
 	

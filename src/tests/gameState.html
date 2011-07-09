@@ -10,13 +10,11 @@
 					assets: '../assets'
 				}
 			}, [
-				'lib/rosewood',
-				'lib/lang',
-				'lib/tester'
-			], function(rw, lang, game){
-				window.rw = rw;
-				window.game = game;
-				game.initGame(function(){
+				'lib/Game',
+				'lib/lang'
+			], function(Game, lang){
+				window.game = new Game;
+				game.setup(function(){
 					game.start();
 				});
 				// game.start();

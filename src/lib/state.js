@@ -5,13 +5,13 @@ define([
 		
 		console.log("state module");
 	Stateful = Compose(function(){
-			console.log("Stateful ctor");
-			this.__statesbyName = {}; 
+			console.log(this.id + " Stateful ctor");
+			this.__statesByName = {}; 
 			this.__statesByType = {};
 		},{
 		// a thing which manages some states
-		__statesByName: {}, 
-		__statesByType: {},
+		__statesByName: null, 
+		__statesByType: null,
 		exitState: function(name){
 			var state = this.__statesByName[name];
 			state.exit();
@@ -55,7 +55,8 @@ define([
 				statesOfType = byType[type] || (byType[type] = []);
 			
 			if(byName[name]){
-				throw new Error("A " + name + " state is already registered");
+				console.log(this.id + " registerState: error");
+				// throw new Error("A " + name + " state is already registered");
 			} else {
 				byName[name] = state;
 			}
