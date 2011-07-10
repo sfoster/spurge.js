@@ -17,6 +17,7 @@ define([
 			state.exit();
 		},
 		enterState: function(name){
+			console.log("state: enterState: ", name);
 			var state = this.__statesByName[name], 
 				type = state.type, 
 				states = this.__statesByType[type], 
@@ -32,7 +33,7 @@ define([
 					altState.active = false;
 				}
 			}
-			console.log("entering state: ", state.foo);
+			console.log("entering state: ", state.id);
 			state.active = true;
 			state.enter && state.enter();
 		},

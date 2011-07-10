@@ -9,50 +9,25 @@ define([
 		'game/theend'
 	], function (lang, Compose, Game, config, welcomeScene, menuScene, worldScene, endedScene){
 
-	var engine; // need one
+	var engine; // TODO: create one
 
 	var after = Compose.after, 
 		before = Compose.before, 
 		from = Compose.from;
 
-
-	return Compose.create(Game, {
+	console.log("creating Game instance with config: ", config)
+	return new Game({
+		id: "theGame",
 		config: config,
 		sprites: null,
-		setup: function(callback){
+		setup: before(function(callback){
 			// console.log("setup sprites: ", sprites);
 			var game = this;
-			// install some local refs to game and config object
-			[welcomeScene, menuScene, worldScene, endedScene].forEach(function(scene){
-				scene.game = game; 
-				scene.config = config; 
-			})
-			welcomeScene.game = this;
-			this.registerState("welcome", welcomeScene);
-			
-			this.registerState("menu", menuScene);
-			
-			this.registerState("playing", worldScene);
-
-			this.registerState("ended", endedScene);
-
-			callback && callback();
-			// move to play scene
-			// this._setupMap();
-			// this._setupPlayer();
-			
-			// rw.loadSprites(this.sprites, lang.bind(this, function() {
-			// 	engine = this.engine = rw.init('map', {
-			// 		x:this.config.width,
-			// 		y:this.config.height,
-			// 		FPS:40,
-			// 		sequence:['ents','blit'],
-			// 		keys:['ua','da','la','ra']
-			// 	});
-			// 	this.postLoad();
-			// 	console.log("rw init and newEnt called");
-			// }));
-		},
+			console.log("app config: ", this.config);
+			this.scenes = [
+				welcomeScene, menuScene, worldScene, endedScene
+			]
+		}),
 		postLoad: function() {
 			this.onReady && this.onReady();
 		},

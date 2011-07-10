@@ -88,11 +88,11 @@ define(['lib/compose'], function(Compose){
 		// 
 		relpath = relpath.replace(/^\.\//, '');
 		while(relpath.indexOf('../') == 0){
-			console.log("trimming relpath: ", relpath);
+			// console.log("trimming relpath: ", relpath);
 			relpath = relpath.substring(3);
-			console.log("trimming dirname: ", dirname);
+			// console.log("trimming dirname: ", dirname);
 			dirname = dirname.replace(/\/[^\/]+$/, '');
-			console.log("-> dirname: ", dirname);
+			// console.log("-> dirname: ", dirname);
 		}
 		return dirname +"/"+ relpath;
 	};

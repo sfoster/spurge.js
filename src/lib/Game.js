@@ -4,7 +4,7 @@ define([
 		'lib/event',
 		'lib/state',
 		'lib/Scene'
-	], function (lang, Compose, Evented, State, Scene){
+	], function (lang, Compose, Evented, Stateful){
 
 	var engine; // need one
 
@@ -13,56 +13,26 @@ define([
 		from = Compose.from;
 
 
-	return Compose(Compose, Evented, State, {
+	return Compose(Compose, Evented, Stateful, function(args){
+		console.log('lib/Game ctor');
+		this.config = args.config || {};
+	},{
 		config: null,
 		sprites: null,
+		scenes: null,
 		setup: function(callback){
 			// console.log("setup sprites: ", sprites);
-			
-			this.registerState("welcome", new Scene({
-				id: "welcomeScene",
-				load: function(){
-					console.log("Welcome Scene loading");
-				}
-			}));
-
-			this.registerState("menu", new Scene({
-				id: "menuScene",
-				load: function(){
-					console.log("Menu Scene loading");
-				}
-			}));
-
-			this.registerState("playing", new Scene({
-				id: "playingScene",
-				load: function(){
-					console.log("Play Scene loading");
-				}
-			}));
-
-			this.registerState("ended", new Scene({
-				id: "endedScene",
-				load: function(){
-					console.log("Endes Scene loading");
-				}
-			}));
-
-			callback && callback();
-			// move to play scene
-			// this._setupMap();
-			// this._setupPlayer();
-			
-			// rw.loadSprites(this.sprites, lang.bind(this, function() {
-			// 	engine = this.engine = rw.init('map', {
-			// 		x:this.config.width,
-			// 		y:this.config.height,
-			// 		FPS:40,
-			// 		sequence:['ents','blit'],
-			// 		keys:['ua','da','la','ra']
-			// 	});
-			// 	this.postLoad();
-			// 	console.log("rw init and newEnt called");
-			// }));
+			var game = this;
+			this.scenes.forEach(function(scene){
+				console.log("registering " + scene.id + " on this: ", this.id);
+				this.registerState(scene.id, scene);
+				scene.game = game; 
+				console.log("assigning config to scene " + scene.id, game.config);
+				scene.config = game.config; 
+			}, this);
+			if(callback){
+				setTimeout(callback, 1);
+			}
 		},
 		postLoad: function() {
 			this.onReady && this.onReady();

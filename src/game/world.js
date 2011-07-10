@@ -1,28 +1,24 @@
 define([
 		'lib/lang',
 		'lib/Compose',
-		'lib/Scene'
+		'game/Scene'
 	], function (lang, Compose, Scene){
-	
+	console.log("welcome module");
+	var after = Compose.after, 
+		before = Compose.before, 
+		from = Compose.from;
+
 	return Compose.create(function(){
-		console.log("the World scene ctor");
-	}, Scene, 
+		console.log("world scene ctor");
+	},Scene, 
 	{
 		// update: notimpl("update"),
 		// redraw: notimpl("redraw"),
-		enter: function(){
-			console.log("World Scene entered");
-			var node = this.config.get("gameNode"); 
-			node.appendChild( document.createTextNode("Now Playing") );
-		},
-		exit: function(){
-			console.log("World Scene exit");
-		},
-		load: function(){
-			console.log("World Scene loading");
-		},
-		unload: function(){
-			console.log("Scene unloading");
-		},
+		id: "world",
+		className: "scene scene-world",
+		render: from(Scene),
+		exit: from(Scene),
+		load: from(Scene),
+		unload: from(Scene),
 	});
 });

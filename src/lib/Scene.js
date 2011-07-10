@@ -2,21 +2,24 @@ define([
 		'lib/lang',
 		'lib/compose',
 		'lib/event',
-		'lib/state'
-	], function (lang, Compose, Evented, State){
+		'lib/state',
+		'lib/rendering'
+	], function (lang, Compose, Evented, Stateful, Renderable){
 	
 	var notimpl = function(name){
 		return function(){
 			console.log("method " + name + " is not implemented");
 		};
 	};
-	return Compose(Compose, Evented, State, {
+	return Compose(Compose, Evented, Stateful, Renderable, {
 		id: "",
 		type: "Scene",
 		update: notimpl("update"),
 		redraw: notimpl("redraw"),
 		enter: function(){
-			console.log("Enter not impl");
+			console.log("State id: " + this.id + " has this: ", this);
+			var node = this.config.get("gameNode"); 
+			this.render(node);
 		},
 		exit: notimpl("exit"),
 		load: function(){
@@ -27,7 +30,7 @@ define([
 		},
 	}, function(){
 		// this.setState("active") has same effect as this.start() (?)
-		console.log(this.id + ": in scene ctor");
+		console.log(this.id + ": in lib/Scene ctor");
 		this.registerState("active", {
 			enter: lang.bind(this, function(){
 				this.enter();
