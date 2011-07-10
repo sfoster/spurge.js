@@ -1,5 +1,30 @@
 <html>
 	<head>
+		<style>
+		#playarea {
+			position: relative;
+		}
+			.scene {
+				width: 100%;
+				height: 100%;
+				position: absolute;
+				top: 0;
+				left: 0;
+				z-index: 10;
+			}
+			.scene-welcome {
+				background-color: #900;
+			}
+			.scene-world {
+				background-color: green;
+			}
+			.scene-menu {
+				background-color: #339;
+			}
+			.scene-ended {
+				background-color: #333;
+			}
+		</style>
 		<script src="../lib/curl.js"></script>
 		<script>
 			// some <script data-main=""> semantics to reduce this boilerplate 
@@ -12,10 +37,12 @@
 			}, [
 				'lib/lang',
 				'game/app',
-			], function(lang, game){
+				'game/config'
+			], function(lang, game, config){
+				// configure, config should be shared by the
+				// game, scenes and any other object that wants it
+				config.set("gameNode", document.getElementById("playarea"));
 				window.game = game;
-				console.log("Setting gameNode in config");
-				game.config.set("gameNode", document.getElementById("playarea"));
 				game.setup(function(){
 					game.start();
 				});
@@ -28,7 +55,7 @@
 		Change FPS
 		<input name="fps" id="fps" type="text" value="30" onchange="rw.setFPS(document.getElementById('fps').value);">
 		<br>
-		<input type="button" value="start" onclick="game.enterState('playing');">
+		<input type="button" value="start" onclick="game.enterState('world');">
 		&nbsp;
 		<input type="button" value="stop" onclick="game.enterState('ended');">
 		&nbsp;
