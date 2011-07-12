@@ -24,6 +24,15 @@
 			.scene-ended {
 				background-color: #333;
 			}
+			.thing {
+				width: 16px;
+				height: 16px;
+				background-color: #000;
+				position: absolute;
+				top: 0;
+				left: 0;
+				z-index: 20;
+			}
 		</style>
 		<script src="../lib/curl.js"></script>
 		<script>
@@ -41,7 +50,11 @@
 			], function(lang, game, config){
 				// configure, config should be shared by the
 				// game, scenes and any other object that wants it
-				config.set("gameNode", document.getElementById("playarea"));
+				var gameNode = document.getElementById("playarea")
+				
+				config.set("gameNode", gameNode);
+				config.set("mapWidth", gameNode.offsetWidth);
+				config.set("mapHeight", gameNode.offsetHeight);
 				window.game = game;
 				game.setup(function(){
 					game.start();
