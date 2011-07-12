@@ -27,6 +27,18 @@ define(['lib/compose'], function(Compose){
 		};
 	};
 	
+	var forEach = function(ar, fn, scope){
+		for(var i=0, len=ar.length; i<len; i++){
+			fn.call(scope || undefinedThis, ar[i], i, ar);
+		}
+	};
+	var forIn = function(obj, fn, scope){
+		for(var i in obj){
+			if(i in _empty) continue;
+			fn.call(scope || undefinedThis, obj[i], i, obj);
+		}
+	};
+	
 	var createObject = function(thing, props) {
 		var FN = function(){};
 		FN.prototype = thing; 
@@ -103,10 +115,13 @@ define(['lib/compose'], function(Compose){
 		uniqId: uniqId,
 		bind: bind,
 		createObject: createObject,
+		forEach: forEach,
+		forIn: forIn,
 		templatize: templatize,
 		modulePath: modulePath,
 		// ensure Compose's this is the default/undefined 'this' else it goes wobbly
-		Compose: mixin(bind(undefinedThis, Compose), Compose)
+		Compose: mixin(bind(undefinedThis, Compose), Compose),
+		_empty: _empty
 	};
 	
 	

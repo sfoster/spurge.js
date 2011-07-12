@@ -1,9 +1,10 @@
 define([
 		'lib/lang',
 		'lib/Compose',
+		'lib/Actor',
 		'game/Scene'
-	], function (lang, Compose, Scene){
-	console.log("welcome module");
+	], function (lang, Compose, Actor, Scene){
+
 	var after = Compose.after, 
 		before = Compose.before, 
 		from = Compose.from;
@@ -42,7 +43,7 @@ define([
 				loops = 0;
 
 				while ((new Date).getTime() > nextGameTick) {
-					console.log("frame, next tick: " + nextGameTick);
+					// console.log("frame, next tick: " + nextGameTick);
 					this.update();
 					nextGameTick += skipTicks;
 					loops++;
@@ -57,9 +58,14 @@ define([
 			// this.redraw();
 		})(),
 		redraw: function(){
-			this.node.innerHTML = "<h2>"+this.id +" Scene entered: " + (new Date()).getTime() + "</h2>";
+			var ents = this.entities || [];
+			for(var i=0, len=ents.length; i<len; i++){
+				ents[i].redraw();
+			}
 		},
 		update: function(){
+			console.log("Scene update");
+			this.timestamp = (new Date()).getTime();
 			// update logic: 
 			// process rules
 			// call update on all entities, 
@@ -67,12 +73,9 @@ define([
 			for(var i=0, len=ents.length; i<len; i++){
 				ents[i].update();
 			}
-			console.log("Scene update");
 		},
 		enter: after(function(){
-			console.log("Scene/state enter");
-			
-			// this._createActors();
+			console.log("Scene/state enter: ", this.node);
 			
 			this.isRunning = true;
 			// build the main loop
@@ -99,5 +102,46 @@ define([
 		}),
 		load: from(Scene),
 		unload: from(Scene),
+		
+		prepare: function(){
+			var config = this.config, 
+				bounds = {
+					x: config.get("mapWidth"), 
+					y: config.get("mapHeight")
+				}
+			;
+
+			for(var i=0; i<200; i++){
+				this.entities.push(this._makeThing(bounds));
+			}
+		}, 
+		_makeThing: function(bounds){
+			var thing = Compose.create(function(){
+				console.log("thing ctor");
+			}, Actor, {
+				type: "thing",
+				className: "thing",
+				height: 16,
+				width: 16,
+				x: Math.random() * (bounds.x - this.width),
+				y: Math.random() * (bounds.y - this.height),
+				direction: Math.round(Math.random()) ? 1 : -1,
+				// innerContent: (new Date()).getTime(),
+				update: after(function(arg){
+					// placeholder move/do fn
+					// console.log("thing x/y: ", this.x, this.y);
+					var velocity = this.direction; 
+					if(velocity > 0 && (this.y + this.height + velocity) > bounds.y) {
+						this.direction = velocity = (velocity*= -1);
+					}
+					else if(velocity < 0 && (this.y + velocity) < 0) {
+						this.direction = velocity = (velocity*= -1);
+					}
+					this.y += velocity;
+					this.dirty("y", "x");
+				})
+			});
+			return thing;
+		}
 	});
 });

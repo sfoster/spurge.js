@@ -17,9 +17,12 @@ define([
 		update: notimpl("update"),
 		redraw: notimpl("redraw"),
 		enter: function(){
-			console.log("State id: " + this.id + " has this: ", this);
-			var node = this.config.get("gameNode"); 
+			console.log(this.id + " Scene enter");
+
+			this.prepare();
+
 			// pass the game node as the container for the scene's rendering
+			var node = this.config.get("gameNode"); 
 			this.render(node);
 		},
 		exit: notimpl("exit"),
@@ -29,6 +32,7 @@ define([
 		unload: function(){
 			console.log("Scene unloading");
 		},
+		prepare: notimpl("prepare")
 	}, function(){
 		// this.setState("active") has same effect as this.start() (?)
 		console.log(this.id + ": in lib/Scene ctor");
@@ -37,6 +41,8 @@ define([
 				this.enter();
 			})
 		});
+		// 
+		this.entities = [];
 	});
 
 });

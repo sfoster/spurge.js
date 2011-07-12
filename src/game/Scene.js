@@ -10,8 +10,9 @@ define([
 		from = Compose.from;
 
 	return Compose(function(){
-		console.log("game/Scene ctor");
+		console.log("game/Scene ctor: " + this.id);
 		this.config = config;
+		this.entities = [];
 	}, Scene, 
 	{
 		// update: notimpl("update"),
@@ -20,6 +21,12 @@ define([
 			console.log("scene node: ", this.node);
 			// var node = document.createElement("div"); 
 			this.node.innerHTML = "<h2>"+this.id +" Scene entered</h2>";
+
+			var ents = this.entities || [];
+			for(var i=0, len=ents.length; i<len; i++){
+				ents[i].render(this.node);
+			}
+			
 		}),
 		exit: function(){
 			console.log(this.id +" Scene exit");
