@@ -15,11 +15,11 @@ define([
 	}, Scene, 
 	{
 		// update: notimpl("update"),
-		// redraw: notimpl("redraw"),
-		render: before(function(container){
-			console.log( this.id +" Scene rendering:", container);
-			// var node = this.config.get("gameNode"); 
-			// node.appendChild( document.createTextNode(this.id +" Scene entered") );
+		render: after(function(container){
+			console.log( this.id +" Initial Scene rendering:", container);
+			console.log("scene node: ", this.node);
+			// var node = document.createElement("div"); 
+			this.node.innerHTML = "<h2>"+this.id +" Scene entered</h2>";
 		}),
 		exit: function(){
 			console.log(this.id +" Scene exit");

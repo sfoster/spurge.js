@@ -19,6 +19,7 @@ define([
 		enter: function(){
 			console.log("State id: " + this.id + " has this: ", this);
 			var node = this.config.get("gameNode"); 
+			// pass the game node as the container for the scene's rendering
 			this.render(node);
 		},
 		exit: notimpl("exit"),
