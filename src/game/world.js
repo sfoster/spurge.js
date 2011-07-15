@@ -2,8 +2,9 @@ define([
 		'lib/lang',
 		'lib/Compose',
 		'lib/Actor',
-		'game/Scene'
-	], function (lang, Compose, Actor, Scene){
+		'game/Scene',
+		'lib/stats',
+	], function (lang, Compose, Actor, Scene, Stats){
 
 	var after = Compose.after, 
 		before = Compose.before, 
@@ -20,6 +21,12 @@ define([
 			};
 	})();
 
+	var monitorStats = true;
+	if(monitorStats){
+		var renderStats = new Stats();
+		var updateStats = new Stats();
+	}
+
 
 	return Compose.create(function(){
 		console.log("world scene ctor");
@@ -29,7 +36,6 @@ define([
 		// redraw: notimpl("redraw"),
 		id: "world",
 		className: "scene scene-world",
-
 		run: (function(self){
 			// experiment, with the scene as host of the main game loop
 			// as we have some "scenes" that don't need a loop at all,
@@ -45,11 +51,13 @@ define([
 				var now = (new Date).getTime();
 				while (now > nextGameTick) {
 					// we'll update more than we'll draw..
+					monitorStats && updateStats.update();
 					this.update();
 					nextGameTick += skipTicks;
 					loops++;
 				}
 				
+				monitorStats && renderStats.update();
 				this.redraw(++frameCount);
 			};
 
@@ -64,6 +72,10 @@ define([
 		},
 		update: function(frameCount){
 			this.timestamp = (new Date()).getTime();
+			if(this.timestamp >= this.endTime) {
+				console.log("stopping at: ", this.timestamp);
+				return this.stop();
+			}
 			// update logic: 
 			// process rules
 			// call update on all entities, 
@@ -74,9 +86,18 @@ define([
 		},
 		enter: after(function(){
 			console.log("Scene/state enter: ", this.node);
+
+			if(monitorStats){
+				document.body.appendChild(renderStats.domElement);
+				document.body.appendChild(updateStats.domElement);
+			}
 			
 			this.isRunning = true;
 			// build the main loop
+			
+			// run for just 5 seconds
+			this.startTime = (new Date()).getTime();
+			this.endTime = this.startTime + 10000;
 			
 			var self = this;
 			var onEachFrame = function(cb) {
@@ -93,10 +114,13 @@ define([
 		}),
 
 		render: from(Scene),
-		exit: before(function(){
-			console.log("Scene exit, isRunning=false, clearing interval: ", this._intervalId);
+		stop: function(){
 			this.isRunning = false;
 			this._intervalId && clearInterval(this._intervalId);
+		},
+		exit: before(function(){
+			console.log("Scene exit, isRunning=false, clearing interval: ", this._intervalId);
+			this.stop();
 		}),
 		load: from(Scene),
 		unload: from(Scene),

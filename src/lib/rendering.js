@@ -26,7 +26,7 @@ define([
 		},
 		render: function(container, posn){
 			// initial rendering
-			console.log(this.id + " Renderable.render");
+			// console.log(this.id + " Renderable.render");
 			if(!container){
 				container = document.body;
 			}
@@ -48,7 +48,7 @@ define([
 			// we expect top/left to change
 			// also sprite frame
 			var dirty = this._dirty || {};
-			var keys = Object.keys(dirty), 
+			var keys = lang.keys(dirty), 
 				node = this.node, 
 				ns = node.style;
 			for(var key in dirty){
