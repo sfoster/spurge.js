@@ -16,6 +16,14 @@ define([
 		sprite: null,
 		frameX: 0, // frame (column) in sprite
 		frameY: 0, // frame (row) in sprite
+		load: function(){
+			if(this.sprite && !this.sprite.loaded){
+				this.sprite.load();
+				console.log(this.id + "has sprite: ", this.sprite)
+				// register sprites
+				// sprites['enemy'] = [assetsDir+"/enemy1.png", 50, 50];
+			}
+		},
 		render: function(container, posn){
 			// initial rendering
 			console.log(this.id + " Renderable.render");
@@ -26,6 +34,14 @@ define([
 			node.className = this.className;
 			this.width && (node.style.width = this.width + "px");
 			this.height && (node.style.height = this.height + "px");
+			if(this.sprite){
+				node.style.background = [
+					"url('"+this.sprite.imgSrc+"')",
+					"no-repeat",
+					this.frameX ? (this.width * this.frameX * -1) +"px" : 0,
+					this.frameY ? (this.height * this.frameY * -1) +"px" : 0
+				].join(" ");
+			}
 			container.appendChild(node);
 		},
 		update: function(){
@@ -48,10 +64,10 @@ define([
 					case "frameX":
 					case "frameY":
 					// update sprite
-						ns.backgroundPosition = 
-							(this.frameX * this.width) 
-							+" " 
-							+(this.frameY * this.height);
+						ns.backgroundPosition = [
+							this.frameX ? (this.width * this.frameX * -1) +"px" : 0,
+							this.frameY ? (this.height * this.frameY * -1) +"px" : 0
+						].join(" ");
 						break;
 					case "innerContent": 
 						node.innerHTML = this.innerContent;

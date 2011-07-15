@@ -36,42 +36,40 @@ define([
 			var fps = 60;
 			var loops = 0, skipTicks = 1000 / fps,
 				maxFrameSkip = 10,
-				nextGameTick = (new Date).getTime();
+				nextGameTick = (new Date).getTime(), 
+				frameCount = 0;
 				
 			console.log("building main loop, with this: ", this.id);
 			return function() {
 				loops = 0;
-
-				while ((new Date).getTime() > nextGameTick) {
-					// console.log("frame, next tick: " + nextGameTick);
+				var now = (new Date).getTime();
+				while (now > nextGameTick) {
+					// we'll update more than we'll draw..
 					this.update();
 					nextGameTick += skipTicks;
 					loops++;
 				}
-
-				this.redraw();
-				// renderStats.update();
-				// Game.draw();
+				
+				this.redraw(++frameCount);
 			};
 
 			// this.update();
 			// this.redraw();
 		})(),
-		redraw: function(){
+		redraw: function(count){
 			var ents = this.entities || [];
 			for(var i=0, len=ents.length; i<len; i++){
-				ents[i].redraw();
+				ents[i].redraw(count);
 			}
 		},
-		update: function(){
-			console.log("Scene update");
+		update: function(frameCount){
 			this.timestamp = (new Date()).getTime();
 			// update logic: 
 			// process rules
 			// call update on all entities, 
 			var ents = this.entities || [];
 			for(var i=0, len=ents.length; i<len; i++){
-				ents[i].update();
+				ents[i].update(frameCount);
 			}
 		},
 		enter: after(function(){
@@ -111,26 +109,46 @@ define([
 				}
 			;
 
-			for(var i=0; i<200; i++){
+			for(var i=0; i<100; i++){
 				this.entities.push(this._makeThing(bounds));
 			}
 		}, 
 		_makeThing: function(bounds){
+			var sprite = lang.createObject({
+				elm: new Image(),
+				loaded: false,
+				load: function(cb){
+					if(cb){
+						this.onload = cb;
+					}
+					this.elm.src = this.imgSrc;
+				}
+			}, {
+				width: 32,
+				height: 32,
+				imgSrc: lang.modulePath('game/app', '../assets/spaceship.png')
+			});
+			sprite.load();
+			
 			var thing = Compose.create(function(){
 				console.log("thing ctor");
 			}, Actor, {
 				type: "thing",
 				className: "thing",
-				height: 16,
-				width: 16,
+				height: 32,
+				width: 32,
+				frameY: 1,
+				sprite: sprite,
 				x: Math.random() * (bounds.x - this.width),
 				y: Math.random() * (bounds.y - this.height),
 				direction: Math.round(Math.random()) ? 1 : -1,
 				// innerContent: (new Date()).getTime(),
-				update: after(function(arg){
+				update: after(function(frameCount){
 					// placeholder move/do fn
 					// console.log("thing x/y: ", this.x, this.y);
-					var velocity = this.direction; 
+					var lastFrame = this._lastFrame || 0, 
+						now = (new Date).getTime(), 
+						velocity = this.direction; 
 					if(velocity > 0 && (this.y + this.height + velocity) > bounds.y) {
 						this.direction = velocity = (velocity*= -1);
 					}
@@ -138,6 +156,12 @@ define([
 						this.direction = velocity = (velocity*= -1);
 					}
 					this.y += velocity;
+					// only animate w. new sprite frame every n seconds
+					if(now - lastFrame > 1000/30) {
+						this.frameX = this.frameX >= 4 ? 0 : this.frameX+1; 
+						this._lastFrame = now;
+						this.dirty("frameX");
+					}
 					this.dirty("y", "x");
 				})
 			});
