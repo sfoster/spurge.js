@@ -2,9 +2,10 @@ define([
 		'lib/lang',
 		'lib/Compose',
 		'lib/Actor',
+		'game/npc',
 		'game/Scene',
 		'lib/Loopable'
-	], function (lang, Compose, Actor, Scene, Loopable){
+	], function (lang, Compose, Actor, npc, Scene, Loopable){
 
 	var after = Compose.after, 
 		before = Compose.before, 
@@ -70,9 +71,10 @@ define([
 				);
 				entities.push(thing);
 			}
+			window.theThings = entities;
 			this.prepared = true;
 		}, 
-		_makeThing: function(bounds){
+		_makeThing: function(bounds, sprite){
 			var sprite = lang.createObject({
 				elm: new Image(),
 				loaded: false,
@@ -89,68 +91,14 @@ define([
 			});
 			sprite.load();
 			
-			var box = {
-				w: 32,
-				h: 32,
+			var thing = new npc.TestThing({
+				width: 32,
+				height: 32,
+				bounds: bounds,
+				frameY: 1,
 				x: Math.random() * (bounds.x - 32),
 				y: Math.random() * (bounds.y - 32),
-			};
-			
-			var thing = Compose.create(function(){
-				// console.log("thing ctor");
-			}, Actor, {
-				type: "thing",
-				className: "thing",
-				height: box.h,
-				width: box.w,
-				frameY: 1,
-				sprite: sprite,
-				x: box.x,
-				y: box.y,
-				decayTime: (new Date()).getTime() + (10e3 * Math.random()),
-				direction: {
-					x: Math.round(Math.random()) ? 1 : -1,
-					y: Math.round(Math.random()) ? 1 : -1
-				},
-				// innerContent: (new Date()).getTime(),
-				update: after(function(frameCount){
-					// placeholder move/do fn
-					// console.log("thing x/y: ", this.x, this.y);
-					var lastFrame = this._lastFrame || 0, 
-						now = (new Date).getTime(), 
-						velX = this.direction.x, 
-						velY = this.direction.y, 
-						x = this.x, y = this.y; 
-
-					if(now >= this.decayTime) {
-						this.destroy();
-					}
-					
-					var newY = y + velY; 
-					if(newY < 0 || newY +this.height > bounds.y) {
-						velY *= -1; 
-						newY = y + velY;
-					}
-
-					var newX = x + velX; 
-					if(newX < 0 || newX +this.width > bounds.x) {
-						velX *= -1; 
-						newX = x + velX;
-					}
-
-					this.y = newY;
-					this.x = newX;
-					this.direction.x = velX;
-					this.direction.y = velY;
-					
-					// only animate w. new sprite frame every n seconds
-					if(now - lastFrame > 1000/30) {
-						this.frameX = this.frameX >= 4 ? 0 : this.frameX+1; 
-						this._lastFrame = now;
-						this.dirty("frameX");
-					}
-					this.dirty("y", "x");
-				})
+				sprite: sprite
 			});
 			return thing;
 		}

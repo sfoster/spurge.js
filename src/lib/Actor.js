@@ -9,8 +9,8 @@ define([
 		from = Compose.from;
 
 
-	return Compose(function(){
-		// console.log("the Actor ctor");
+	return Compose(Compose, function(){
+		console.log("Actor ctor");
 		this._dirty = {};
 		this.handles = [];
 	}, Renderable, 
