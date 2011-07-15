@@ -32,16 +32,17 @@ define([
 			}
 			var node = this.node = document.createElement("div"); 
 			node.className = this.className;
-			this.width && (node.style.width = this.width + "px");
-			this.height && (node.style.height = this.height + "px");
+			var dirty = this._dirty || (this._dirty = {});
+			dirty.x = dirty.y = true; // we'll pick up width/height from css
+
 			if(this.sprite){
+				dirty.frameX = dirty.frameY = true;
 				node.style.background = [
 					"url('"+this.sprite.imgSrc+"')",
-					"no-repeat",
-					this.frameX ? (this.width * this.frameX * -1) +"px" : 0,
-					this.frameY ? (this.height * this.frameY * -1) +"px" : 0
+					"no-repeat"
 				].join(" ");
 			}
+			this.update();
 			container.appendChild(node);
 		},
 		update: function(){

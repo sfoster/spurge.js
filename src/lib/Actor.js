@@ -10,7 +10,7 @@ define([
 
 
 	return Compose(function(){
-		console.log("the Actor ctor");
+		// console.log("the Actor ctor");
 		this._dirty = {};
 	}, Renderable, 
 	{
