@@ -41,13 +41,12 @@ define([
 		// update: notimpl("update"),
 		render: after(function(container){
 			console.log( this.id +" Initial Scene rendering:", container);
-			console.log("scene node: ", this.node);
+			// console.log("scene node: ", this.node);
 
 			var ents = this.entities || [];
 			for(var i=0, len=ents.length; i<len; i++){
 				ents[i].render(this.node);
 			}
-			
 		}),
 		exit: function(){
 			console.log(this.id +" Scene exit");

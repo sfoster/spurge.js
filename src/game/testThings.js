@@ -25,10 +25,12 @@ define([
 		}),
 
 		redraw: function(count){
-			var ents = this.entities || [];
-			for(var i=0, len=ents.length; i<len; i++){
-				ents[i].redraw(count);
-			}
+			this.raiseEvent("redraw");
+			// var ents = this.entities || [];
+			// for(var i=0, len=ents.length; i<len; i++){
+			// 	ents[i].redraw(count);
+			// }
+			
 		},
 		update: function(frameCount){
 			this.timestamp = (new Date()).getTime();
@@ -39,10 +41,11 @@ define([
 			// update logic: 
 			// process rules
 			// call update on all entities, 
-			var ents = this.entities || [];
-			for(var i=0, len=ents.length; i<len; i++){
-				ents[i].update(frameCount);
-			}
+			// var ents = this.entities || [];
+			// for(var i=0, len=ents.length; i<len; i++){
+			// 	ents[i].update(frameCount);
+			// }
+			this.raiseEvent("update");
 		},
 		render: from(Scene),
 		exit: before(function(){
@@ -57,11 +60,17 @@ define([
 				bounds = {
 					x: config.get("mapWidth"), 
 					y: config.get("mapHeight")
-				}
+				}, 
+				thing = null, 
+				entities = this.entities
 			;
 
 			for(var i=0; i<100; i++){
-				this.entities.push(this._makeThing(bounds));
+				thing = this._makeThing(bounds);
+				// TODO: store handles?
+				this.addEventListener("update", lang.bind(thing, "update"));
+				this.addEventListener("redraw", lang.bind(thing, "redraw"));
+				entities.push(thing);
 			}
 			this.prepared = true;
 		}, 

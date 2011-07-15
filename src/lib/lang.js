@@ -22,6 +22,9 @@ define(['lib/compose'], function(Compose){
 	uniqId.count = 0;
 
 	var bind = function(scope, fn) {
+		if(typeof fn == "string") {
+			fn = scope[fn];
+		}
 		return function() {
 			return fn.apply(scope, arguments);
 		};
