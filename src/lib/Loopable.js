@@ -24,6 +24,9 @@ define([
 	if(monitorStats){
 		var renderStats = new Stats();
 		var updateStats = new Stats();
+		document.body.appendChild(renderStats.domElement);
+		document.body.appendChild(updateStats.domElement);
+		
 	}
 
 	var Loopable = Compose(function(){
@@ -33,21 +36,18 @@ define([
 		fps: 1000/60, // default frames/sec.
 
 		startLoop: function(){
-			console.log("Scene/state enter: ", this.node);
+			console.log(this.id + " startLoop");
 
-			if(monitorStats){
-				document.body.appendChild(renderStats.domElement);
-				document.body.appendChild(updateStats.domElement);
-			}
-			
 			this.isRunning = true;
 			// build the main loop
+			this.runLoop = this.prepareLoop();
 			
 			this.startTime = (new Date()).getTime();
 			
 			var self = this;
 			var onEachFrame = function(cb) {
 				// only re-request anim frame if we're still running
+				console.log("onEachFrame");
 				var _cb = function() { 
 					if(self.isRunning){
 						cb(); requestAnimFrame(_cb); 
@@ -58,7 +58,8 @@ define([
 			this.onEachFrame = onEachFrame;
 			this.onEachFrame(lang.bind(this, this.runLoop));
 		},
-		runLoop: (function(self){
+		
+		prepareLoop: function(){
 			// experiment, with the scene as host of the main game loop
 			// as we have some "scenes" that don't need a loop at all,
 			var fps = 60;
@@ -85,7 +86,7 @@ define([
 
 			// this.update();
 			// this.redraw();
-		})(),
+		},
 
 		stopLoop: function(){
 			this.isRunning = false;
