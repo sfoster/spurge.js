@@ -23,20 +23,25 @@ define([
 		enter: function(){
 			console.log(this.id + " Scene enter");
 
-			this.prepare();
+			if(!this.prepared){
+				this.prepare();
+			}
 
 			// pass the game node as the container for the scene's rendering
-			var node = this.config.get("gameNode"); 
-			this.render(node);
+			var gameNode = this.config.get("gameNode"); 
+
+			// don't re-render on re-entry
+			if(this.node){
+				this.node.style.zIndex = 10;
+			} else {
+				this.render(gameNode);
+			}
 		},
-		exit: notimpl("exit"),
 		
 		// update: notimpl("update"),
 		render: after(function(container){
 			console.log( this.id +" Initial Scene rendering:", container);
 			console.log("scene node: ", this.node);
-			// var node = document.createElement("div"); 
-			this.node.innerHTML = "<h2>"+this.id +" Scene entered</h2>";
 
 			var ents = this.entities || [];
 			for(var i=0, len=ents.length; i<len; i++){

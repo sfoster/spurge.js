@@ -95,7 +95,6 @@ define(['lib/compose'], function(Compose){
 		var pathCache = {};
 		return function(mod, relpath) {
 			// build a path from a reference module path
-			console.log("modulePath: ", mod, relpath);
 			var dirname = pathCache[mod] || "";
 			
 			if(!dirname){
@@ -108,9 +107,9 @@ define(['lib/compose'], function(Compose){
 				console.log("matching with: ", re.source);
 				for(var i=0; i<scripts.length; i++){
 					if(scripts[i].src && (match = re.exec(scripts[i].src))) {
-						console.log("match: ", match);
+						//console.log("match: ", match);
 						a.href = match[1];
-						// strip off the module filename (dirname(lib/module.js) -> lib)
+					 	// strip off the module filename (dirname(lib/module.js) -> lib)
 						dirname = a.pathname.replace(/\/[^\/]+$/, '');
 						//console.log("dirname: ", dirname);
 						break;

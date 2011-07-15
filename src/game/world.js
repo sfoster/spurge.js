@@ -3,67 +3,27 @@ define([
 		'lib/Compose',
 		'lib/Actor',
 		'game/Scene',
-		'lib/stats',
-	], function (lang, Compose, Actor, Scene, Stats){
+		'lib/Loopable'
+	], function (lang, Compose, Actor, Scene, Loopable){
 
 	var after = Compose.after, 
 		before = Compose.before, 
 		from = Compose.from;
 
-	var requestAnimFrame = (function(){
-		return  window.requestAnimationFrame       || 
-			window.webkitRequestAnimationFrame     || 
-			window.mozRequestAnimationFrame        || 
-			window.oRequestAnimationFrame          || 
-			window.msRequestAnimationFrame         || 
-			function(/* function */ callback){
-			  window.setTimeout(callback, 1000 / 60);
-			};
-	})();
-
-	var monitorStats = true;
-	if(monitorStats){
-		var renderStats = new Stats();
-		var updateStats = new Stats();
-	}
-
-
 	return Compose.create(function(){
 		console.log("world scene ctor");
-	},Scene, 
+	}, Scene, Loopable,
 	{
-		// update: notimpl("update"),
-		// redraw: notimpl("redraw"),
 		id: "world",
 		className: "scene scene-world",
-		run: (function(self){
-			// experiment, with the scene as host of the main game loop
-			// as we have some "scenes" that don't need a loop at all,
-			var fps = 60;
-			var loops = 0, skipTicks = 1000 / fps,
-				maxFrameSkip = 10,
-				nextGameTick = (new Date).getTime(), 
-				frameCount = 0;
-				
-			console.log("building main loop, with this: ", this.id);
-			return function() {
-				loops = 0;
-				var now = (new Date).getTime();
-				while (now > nextGameTick) {
-					// we'll update more than we'll draw..
-					monitorStats && updateStats.update();
-					this.update();
-					nextGameTick += skipTicks;
-					loops++;
-				}
-				
-				monitorStats && renderStats.update();
-				this.redraw(++frameCount);
-			};
 
-			// this.update();
-			// this.redraw();
-		})(),
+		enter: after(function(){
+			console.log("entering World scene");
+			this.startLoop();
+			// run for just 10 seconds
+			this.endTime = this.startTime + 10000;
+		}),
+
 		redraw: function(count){
 			var ents = this.entities || [];
 			for(var i=0, len=ents.length; i<len; i++){
@@ -74,7 +34,7 @@ define([
 			this.timestamp = (new Date()).getTime();
 			if(this.timestamp >= this.endTime) {
 				console.log("stopping at: ", this.timestamp);
-				return this.stop();
+				return this.stopLoop();
 			}
 			// update logic: 
 			// process rules
@@ -84,43 +44,10 @@ define([
 				ents[i].update(frameCount);
 			}
 		},
-		enter: after(function(){
-			console.log("Scene/state enter: ", this.node);
-
-			if(monitorStats){
-				document.body.appendChild(renderStats.domElement);
-				document.body.appendChild(updateStats.domElement);
-			}
-			
-			this.isRunning = true;
-			// build the main loop
-			
-			// run for just 5 seconds
-			this.startTime = (new Date()).getTime();
-			this.endTime = this.startTime + 10000;
-			
-			var self = this;
-			var onEachFrame = function(cb) {
-				// only re-request anim frame if we're still running
-				var _cb = function() { 
-					if(self.isRunning){
-						cb(); requestAnimFrame(_cb); 
-					}
-				};
-				_cb();
-			};
-			this.onEachFrame = onEachFrame;
-			this.onEachFrame(lang.bind(this, this.run));
-		}),
-
 		render: from(Scene),
-		stop: function(){
-			this.isRunning = false;
-			this._intervalId && clearInterval(this._intervalId);
-		},
 		exit: before(function(){
 			console.log("Scene exit, isRunning=false, clearing interval: ", this._intervalId);
-			this.stop();
+			this.stopLoop();
 		}),
 		load: from(Scene),
 		unload: from(Scene),
@@ -136,6 +63,7 @@ define([
 			for(var i=0; i<100; i++){
 				this.entities.push(this._makeThing(bounds));
 			}
+			this.prepared = true;
 		}, 
 		_makeThing: function(bounds){
 			var sprite = lang.createObject({
