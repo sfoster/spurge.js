@@ -77,37 +77,45 @@ define(['lib/compose'], function(Compose){
 		});
 		return str;
 	};
-	var modulePath = function(mod, relpath) {
-		// build a path from a reference module path
-		console.log("modulePath: ", mod, relpath);
-		var hd = document.getElementsByTagName("head")[0], 
-			scripts = hd.getElementsByTagName("script"), 
-			match,
-			re = new RegExp('^(.*/?' + mod + ")\\.js"), 
-			a = document.createElement("a"), 
-			dirname = ""; 
-		console.log("matching with: ", re.source);
-		for(var i=0; i<scripts.length; i++){
-			if(scripts[i].src && (match = re.exec(scripts[i].src))) {
-				console.log("match: ", match);
-				a.href = match[1];
-				// strip off the module filename (dirname(lib/module.js) -> lib)
-				dirname = a.pathname.replace(/\/[^\/]+$/, '');
-				//console.log("dirname: ", dirname);
-				break;
+	var modulePath = (function(){
+		var pathCache = {};
+		return function(mod, relpath) {
+			// build a path from a reference module path
+			console.log("modulePath: ", mod, relpath);
+			var dirname = pathCache[mod] || "";
+			
+			if(!dirname){
+				var hd = document.getElementsByTagName("head")[0], 
+					scripts = hd.getElementsByTagName("script"), 
+					match,
+					re = new RegExp('^(.*/?' + mod + ")\\.js"), 
+					a = document.createElement("a"); 
+
+				console.log("matching with: ", re.source);
+				for(var i=0; i<scripts.length; i++){
+					if(scripts[i].src && (match = re.exec(scripts[i].src))) {
+						console.log("match: ", match);
+						a.href = match[1];
+						// strip off the module filename (dirname(lib/module.js) -> lib)
+						dirname = a.pathname.replace(/\/[^\/]+$/, '');
+						//console.log("dirname: ", dirname);
+						break;
+					}
+				}
+				pathCache[mod] = dirname;
 			}
-		}
-		// 
-		relpath = relpath.replace(/^\.\//, '');
-		while(relpath.indexOf('../') == 0){
-			// console.log("trimming relpath: ", relpath);
-			relpath = relpath.substring(3);
-			// console.log("trimming dirname: ", dirname);
-			dirname = dirname.replace(/\/[^\/]+$/, '');
-			// console.log("-> dirname: ", dirname);
-		}
-		return dirname +"/"+ relpath;
-	};
+			// 
+			relpath = relpath.replace(/^\.\//, '');
+			while(relpath.indexOf('../') == 0){
+				// console.log("trimming relpath: ", relpath);
+				relpath = relpath.substring(3);
+				// console.log("trimming dirname: ", dirname);
+				dirname = dirname.replace(/\/[^\/]+$/, '');
+				// console.log("-> dirname: ", dirname);
+			}
+			return dirname +"/"+ relpath;
+		};
+	})();
 	
 	console.log("lang module returning exports");
 	return	{
