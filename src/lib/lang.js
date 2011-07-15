@@ -27,6 +27,20 @@ define(['lib/compose'], function(Compose){
 		};
 	};
 	
+	// shim for Object.keys, using native impl where available
+	var keys = (function(nativeKeys){
+		return nativeKeys ? 
+			function(obj){ return nativeKeys.call(Object, obj)} :
+			function(obj){
+				var names = [];
+				for(var i in obj){
+					if(i in _empty) continue;
+					names.push(i);
+				}
+				return names;
+			}
+	})(Object.keys);
+	
 	var forEach = function(ar, fn, scope){
 		for(var i=0, len=ar.length; i<len; i++){
 			fn.call(scope || undefinedThis, ar[i], i, ar);
@@ -123,6 +137,7 @@ define(['lib/compose'], function(Compose){
 		uniqId: uniqId,
 		bind: bind,
 		createObject: createObject,
+		keys: keys,
 		forEach: forEach,
 		forIn: forIn,
 		templatize: templatize,
