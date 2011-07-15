@@ -40,11 +40,7 @@ define([
 			}
 			// update logic: 
 			// process rules
-			// call update on all entities, 
-			// var ents = this.entities || [];
-			// for(var i=0, len=ents.length; i<len; i++){
-			// 	ents[i].update(frameCount);
-			// }
+			// call update on all active entities, 
 			this.raiseEvent("update");
 		},
 		render: from(Scene),
@@ -67,9 +63,11 @@ define([
 
 			for(var i=0; i<100; i++){
 				thing = this._makeThing(bounds);
-				// TODO: store handles?
-				this.addEventListener("update", lang.bind(thing, "update"));
-				this.addEventListener("redraw", lang.bind(thing, "redraw"));
+				// hook up this entity to the scene update events
+				thing.handles.push(
+					this.addEventListener("update", lang.bind(thing, "update")),
+					this.addEventListener("redraw", lang.bind(thing, "redraw"))
+				);
 				entities.push(thing);
 			}
 			this.prepared = true;
@@ -109,6 +107,7 @@ define([
 				sprite: sprite,
 				x: box.x,
 				y: box.y,
+				decayTime: (new Date()).getTime() + (10e3 * Math.random()),
 				direction: {
 					x: Math.round(Math.random()) ? 1 : -1,
 					y: Math.round(Math.random()) ? 1 : -1
@@ -122,6 +121,10 @@ define([
 						velX = this.direction.x, 
 						velY = this.direction.y, 
 						x = this.x, y = this.y; 
+
+					if(now >= this.decayTime) {
+						this.destroy();
+					}
 					
 					var newY = y + velY; 
 					if(newY < 0 || newY +this.height > bounds.y) {
