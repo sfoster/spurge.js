@@ -1,9 +1,10 @@
 <html>
 	<head>
 		<style>
-		#playarea {
-			position: relative;
-		}
+			#playarea {
+				position: relative;
+			}
+
 			.scene {
 				width: 100%;
 				height: 100%;
@@ -11,6 +12,16 @@
 				top: 0;
 				left: 0;
 				z-index: 10;
+			}
+			.scene h2 {
+				margin: 1em auto;
+				text-align: center;
+				width: 60%;
+				color: #fff;
+				font-family: Gill, Helvetica, sans-serif;
+				font-size: 2em;
+				text-transform: uppercase;
+		     	text-shadow: 0px -2px 0px #000, 0px 2px 3px #333;
 			}
 			.scene-welcome {
 				background-color: #900;
@@ -45,7 +56,7 @@
 				}
 			}, [
 				'lib/lang',
-				'game/app',
+				'game/tester',
 				'game/config'
 			], function(lang, game, config){
 				// configure, config should be shared by the
@@ -66,19 +77,10 @@
 	</head>
 	<body style="margin:0;padding:0;">
 		<div id="playarea" style="height: 200px; margin-right:10px;"></div>
-		Change FPS
-		<input name="fps" id="fps" type="text" value="30" onchange="rw.setFPS(document.getElementById('fps').value);">
-		<br>
-		<input type="button" value="start" onclick="game.enterState('world');">
+		<input type="button" value="start" onclick="game.enterState('testThings');">
 		&nbsp;
 		<input type="button" value="stop" onclick="game.enterState('ended');">
 		&nbsp;
 		<input type="button" value="menu mode" onclick="game.enterState('menu');">
-		<div id="menu" style="display:none">
-			The menu
-		</div>
-		<div id="testImg">
-			The menu
-		</div>
 	</body>
 </html>

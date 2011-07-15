@@ -16,7 +16,9 @@ define([
 		// redraw: notimpl("redraw"),
 		id: "menu",
 		className: "scene scene-menu",
-		render: from(Scene),
+		render: after(function(){
+			this.node.innerHTML = '<h2>The Menu Scene</h2>'
+		}),
 		exit: from(Scene),
 		load: from(Scene),
 		unload: from(Scene),

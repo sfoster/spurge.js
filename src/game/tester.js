@@ -5,7 +5,7 @@ define([
 		'game/config',
 		'game/welcome',
 		'game/menu',
-		'game/world',
+		'game/testThings',
 		'game/theend'
 	], function (lang, Compose, Game, config, welcomeScene, menuScene, worldScene, endedScene){
 

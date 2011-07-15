@@ -11,14 +11,14 @@ define([
 		from = Compose.from;
 
 	return Compose.create(function(){
-		console.log("world scene ctor");
+		console.log("testThings scene ctor");
 	}, Scene, Loopable,
 	{
-		id: "world",
+		id: "testThings",
 		className: "scene scene-world",
 
 		enter: after(function(){
-			console.log("entering World scene");
+			console.log("entering testThings scene");
 			this.startLoop();
 			// run for just 10 seconds
 			this.endTime = this.startTime + 10000;
@@ -78,7 +78,7 @@ define([
 			}, {
 				width: 32,
 				height: 32,
-				imgSrc: lang.modulePath('game/app', '../assets/spaceship.png')
+				imgSrc: lang.modulePath('game/tester', '../assets/spaceship.png')
 			});
 			sprite.load();
 			
