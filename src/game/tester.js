@@ -5,9 +5,12 @@ define([
 		'game/config',
 		'game/welcome',
 		'game/menu',
+		'game/testPlayer',
 		'game/testThings',
 		'game/theend'
-	], function (lang, Compose, Game, config, welcomeScene, menuScene, worldScene, endedScene){
+	], function (
+		lang, Compose, Game, config, 
+		welcomeScene, menuScene, playerScene, worldScene, endedScene){
 
 	var engine; // TODO: create one
 
@@ -25,7 +28,7 @@ define([
 			var game = this;
 			console.log("app config: ", this.config);
 			this.scenes = [
-				welcomeScene, menuScene, worldScene, endedScene
+				welcomeScene, menuScene, playerScene, worldScene, endedScene
 			]
 		}),
 		postLoad: function() {

@@ -35,6 +35,12 @@
 			.scene-ended {
 				background-color: #333;
 			}
+			.sprite {
+				position: absolute;
+				top: 0;
+				left: 0;
+				z-index: 20;
+			}
 			.thing {
 				width: 32px;
 				height: 32px;
@@ -43,6 +49,10 @@
 				top: 0;
 				left: 0;
 				z-index: 20;
+			}
+			.static-target {
+				width: 50px;
+				height: 50px;
 			}
 		</style>
 		<script src="../lib/curl.js"></script>
@@ -77,6 +87,8 @@
 	</head>
 	<body style="margin:0;padding:0;">
 		<div id="playarea" style="height: 200px; margin-right:10px;"></div>
+		<input type="button" value="player bit" onclick="game.enterState('testPlayer');">
+		&nbsp;
 		<input type="button" value="start" onclick="game.enterState('testThings');">
 		&nbsp;
 		<input type="button" value="stop" onclick="game.enterState('ended');">

@@ -26,7 +26,7 @@ define([
 		},
 		render: function(container, posn){
 			// initial rendering
-			// console.log(this.id + " Renderable.render");
+			console.log(this.type + " Renderable.render");
 			if(!container){
 				container = document.body;
 			}
@@ -34,7 +34,7 @@ define([
 			node.className = this.className;
 			var dirty = this._dirty || (this._dirty = {});
 			dirty.x = dirty.y = true; // we'll pick up width/height from css
-
+			
 			if(this.sprite){
 				dirty.frameX = dirty.frameY = true;
 				node.style.background = [
@@ -42,6 +42,7 @@ define([
 					"no-repeat"
 				].join(" ");
 			}
+			// console.log("calling initial render/update: ", this.id, JSON.stringify(dirty));
 			this.update();
 			container.appendChild(node);
 		},
@@ -52,6 +53,7 @@ define([
 			var keys = lang.keys(dirty), 
 				node = this.node, 
 				ns = node.style;
+			
 			for(var key in dirty){
 				if(key in lang._empty) continue;
 				// translate properties to style properties
@@ -76,6 +78,7 @@ define([
 					default: 
 						ns[key] = this[key] + "px";
 				}
+				this._dirty = {};
 			}
 		},
 		unrender: function(){

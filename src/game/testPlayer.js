@@ -1,21 +1,20 @@
 define([
 		'lib/lang',
 		'lib/Compose',
-		'lib/Actor',
 		'game/npc',
 		'game/Scene',
 		'lib/Loopable'
-	], function (lang, Compose, Actor, npc, Scene, Loopable){
+	], function (lang, Compose, npc, Scene, Loopable){
 
 	var after = Compose.after, 
 		before = Compose.before, 
 		from = Compose.from;
 
 	return Compose.create(function(){
-		console.log("testThings scene ctor");
+		console.log("testPlayer scene ctor");
 	}, Scene, Loopable,
 	{
-		id: "testThings",
+		id: "testPlayer",
 		className: "scene scene-world",
 
 		enter: after(function(){
@@ -27,11 +26,6 @@ define([
 
 		redraw: function(count){
 			this.raiseEvent("redraw");
-			// var ents = this.entities || [];
-			// for(var i=0, len=ents.length; i<len; i++){
-			// 	ents[i].redraw(count);
-			// }
-			
 		},
 		update: function(frameCount){
 			this.timestamp = (new Date()).getTime();
@@ -62,10 +56,32 @@ define([
 				entities = this.entities
 			;
 
-			// make a load of TestThings
-			for(var i=0; i<100; i++){
-				thing = this._makeThing(bounds);
-				entities.push(thing);
+			var targetSprite = lang.createObject({
+				img: new Image(),
+				loaded: false,
+				load: function(cb){
+					if(cb){
+						this.onload = cb;
+					}
+					this.img.src = this.imgSrc;
+				}
+			}, {
+				width: 50,
+				height: 50,
+				imgSrc: lang.modulePath('lib/Actor', '../assets/enemy1.png')
+			});
+			targetSprite.load();
+			
+			for(var i=0; i<2; i++){
+				entities.push( 
+					new npc.Target({
+						id: "target_"+i,
+						bounds: bounds,
+						x: Math.random() * (bounds.x - 50),
+						y: Math.random() * (bounds.y - 50),
+						sprite: targetSprite
+					})
+				);
 			}
 			// hook up their events
 			// TODO: pass entity the scene so they can register their own events?
@@ -78,34 +94,6 @@ define([
 			}, this);
 			
 			this.prepared = true;
-		}, 
-		_makeThing: function(bounds, sprite){
-			var sprite = lang.createObject({
-				img: new Image(),
-				loaded: false,
-				load: function(cb){
-					if(cb){
-						this.onload = cb;
-					}
-					this.img.src = this.imgSrc;
-				}
-			}, {
-				width: 32,
-				height: 32,
-				imgSrc: lang.modulePath('game/tester', '../assets/spaceship.png')
-			});
-			sprite.load();
-			
-			var thing = new npc.TestThing({
-				width: 32,
-				height: 32,
-				bounds: bounds,
-				frameY: 1,
-				x: Math.random() * (bounds.x - 32),
-				y: Math.random() * (bounds.y - 32),
-				sprite: sprite
-			});
-			return thing;
 		}
 	});
 });

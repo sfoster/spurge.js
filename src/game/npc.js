@@ -76,5 +76,31 @@ define([
 		})
 	});
 	
+	exports.Target = Compose(function(args){
+	}, Actor, {
+		health: 1,
+		type: "target",
+		width: 50,
+		height: 50,
+		_firstUpdate: true,
+		className: "sprite static-target",
+		update: function(frameCount){
+			// doesn't do much
+			// just dies on first touch
+			var lastFrame = this._lastFrame || 0, 
+				now = (new Date).getTime();
+			
+			if(this.health <= 0) {
+				this.destroy();
+				return;
+			}
+			if(this._firstUpdate){
+				this.dirty("y", "x");
+				this._firstUpdate = false;
+			}
+		}
+		
+	});
+	
 	return exports;
 });
