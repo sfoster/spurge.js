@@ -1,7 +1,7 @@
 define(function (){
 
 	// summary: 
-	//    a mixin/trait that provides basic event capabilities
+	//    a mixin/trait that provides basic event management capabilities
 
 	var Evented = {
 		// dictionary of all event-names => listener arrays

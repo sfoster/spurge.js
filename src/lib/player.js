@@ -10,7 +10,7 @@ define([
 		from = Compose.from;
 
 	var exports = {};
-	console.log("defining TestThing");
+
 	exports.Dude = Compose(function(args){
 
 	}, ent.Actor);

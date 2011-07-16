@@ -19,6 +19,7 @@ define([
 		from = Compose.from;
 
 	console.log("creating Game instance with config: ", config)
+	
 	return new Game({
 		id: "theGame",
 		config: config,

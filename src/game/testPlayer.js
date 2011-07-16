@@ -13,16 +13,18 @@ define([
 
 	return Compose.create(function(){
 		console.log("testPlayer scene ctor");
+		console.log("controls: ", this.controls);
 	}, Scene, Loopable,
 	{
 		id: "testPlayer",
 		className: "scene scene-world",
 
 		enter: after(function(){
-			console.log("entering testThings scene");
+			console.log("entering testPlayer scene");
 			this.startLoop();
 			// run for just 10 seconds
 			this.endTime = this.startTime + 10000;
+			this.controls.init();
 		}),
 
 		redraw: function(count){
@@ -75,6 +77,36 @@ define([
 					})
 				);
 			}
+			
+			var activeKeys = this.controls.keys;
+			
+			var you = Compose.create(npc.Target, {
+				id: "player_thing",
+				bounds: bounds,
+				x: Math.random() * (bounds.x - 50),
+				y: Math.random() * (bounds.y - 50),
+				sprite: targetSprite, 
+				update: after(function(){
+					if(activeKeys.UPARROW){
+						this.y -= 1;
+						this.dirty("y");
+					}
+					if(activeKeys.DOWNARROW){
+						this.y += 1;
+						this.dirty("y");
+					}
+					if(activeKeys.LEFTARROW){
+						this.x -= 1;
+						this.dirty("x");
+					}
+					if(activeKeys.RIGHTARROW){
+						this.x += 1;
+						this.dirty("x");
+					}
+				})
+			});
+			
+			entities.push(you);
 			// hook up their events
 			// TODO: pass entity the scene so they can register their own events?
 			lang.forEach(entities, function(thing){
