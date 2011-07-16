@@ -1,16 +1,30 @@
 define([
 		'lib/lang',
 		'lib/Compose',
-		'lib/rendering',
+		'lib/rendering'
 	], function (lang, Compose, Renderable){
 	
 	var after = Compose.after, 
 		before = Compose.before, 
 		from = Compose.from;
 
+	var exports = {};
+	exports.Sprite = Compose(Compose, function(){
+		img: new Image();
+	}, {
+		width: 16,
+		height: 16,
+		imgSrc: "",
+		loaded: false,
+		load: function(cb){
+			if(cb){
+				this.onload = cb;
+			}
+			this.img.src = this.imgSrc;
+		}
+	});
 
-	return Compose(Compose, function(){
-		console.log("Actor ctor");
+	exports.Actor = Compose(Compose, function(){
 		this._dirty = {};
 		this.handles = [];
 	}, Renderable, 
@@ -24,7 +38,7 @@ define([
 		dirty: function(){
 			lang.forEach(arguments, function(name){
 				this._dirty[name] = true;
-			}, this)
+			}, this);
 			return this;
 		},
 		update: function(){
@@ -38,4 +52,5 @@ define([
 			this.unrender();
 		}
 	});
+	return exports;
 });

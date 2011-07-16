@@ -1,9 +1,9 @@
 define([
 		'lib/lang',
 		'lib/Compose',
-		'lib/Actor',
+		'lib/entity',
 		'lib/state',
-	], function (lang, Compose, Actor, Stateful){
+	], function (lang, Compose, ent, Stateful){
 
 	var after = Compose.after, 
 		before = Compose.before, 
@@ -13,9 +13,10 @@ define([
 	console.log("defining TestThing");
 	exports.Dude = Compose(function(args){
 
-	});
-	// register sprites
-	sprites['tower'] = ['${assetsDir}/simpleTower.png', 50, 50];
+	}, ent.Actor);
+
+	// // register sprites
+	// sprites['tower'] = ['${assetsDir}/simpleTower.png', 50, 50];
 
 	return {
 		sprites: sprites,

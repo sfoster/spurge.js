@@ -68,7 +68,7 @@ define([
 			}, {
 				width: 50,
 				height: 50,
-				imgSrc: lang.modulePath('lib/Actor', '../assets/enemy1.png')
+				imgSrc: lang.modulePath('lib/entity', '../assets/enemy1.png')
 			});
 			targetSprite.load();
 			

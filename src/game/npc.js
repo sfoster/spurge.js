@@ -1,9 +1,9 @@
 define([
 		'lib/lang',
 		'lib/Compose',
-		'lib/Actor',
+		'lib/entity',
 		'lib/state',
-	], function (lang, Compose, Actor, Stateful){
+	], function (lang, Compose, ent, Stateful){
 
 	var after = Compose.after, 
 		before = Compose.before, 
@@ -12,7 +12,6 @@ define([
 	var exports = {};
 	console.log("defining TestThing");
 	exports.TestThing = Compose(function(args){
-		console.log("TestThing ctor");
 		if(args.bounds){
 			// each to his own boundaries
 			this.bounds = lang.createObject(args.bounds);
@@ -23,7 +22,7 @@ define([
 			y: Math.round(Math.random()) ? 1 : -1
 		};
 		this.decayTime = (new Date()).getTime() + (10e3 * Math.random());
-	}, Actor, 
+	}, ent.Actor, 
 	{
 		type: "thing",
 		className: "thing",
@@ -77,7 +76,7 @@ define([
 	});
 	
 	exports.Target = Compose(function(args){
-	}, Actor, {
+	}, ent.Actor, {
 		health: 1,
 		type: "target",
 		width: 50,

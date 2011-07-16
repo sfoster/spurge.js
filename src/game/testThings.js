@@ -1,11 +1,11 @@
 define([
 		'lib/lang',
 		'lib/Compose',
-		'lib/Actor',
+		'lib/entity',
 		'game/npc',
 		'game/Scene',
 		'lib/Loopable'
-	], function (lang, Compose, Actor, npc, Scene, Loopable){
+	], function (lang, Compose, ent, npc, Scene, Loopable){
 
 	var after = Compose.after, 
 		before = Compose.before, 
