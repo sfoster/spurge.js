@@ -10,7 +10,7 @@ define([
 
 	var exports = {};
 	exports.Sprite = Compose(Compose, function(){
-		img: new Image();
+		this.img = new Image();
 	}, {
 		width: 16,
 		height: 16,

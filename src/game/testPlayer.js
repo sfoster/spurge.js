@@ -1,10 +1,11 @@
 define([
 		'lib/lang',
 		'lib/Compose',
+		'lib/entity',
 		'game/npc',
 		'game/Scene',
 		'lib/Loopable'
-	], function (lang, Compose, npc, Scene, Loopable){
+	], function (lang, Compose, ent, npc, Scene, Loopable){
 
 	var after = Compose.after, 
 		before = Compose.before, 
@@ -56,16 +57,7 @@ define([
 				entities = this.entities
 			;
 
-			var targetSprite = lang.createObject({
-				img: new Image(),
-				loaded: false,
-				load: function(cb){
-					if(cb){
-						this.onload = cb;
-					}
-					this.img.src = this.imgSrc;
-				}
-			}, {
+			var targetSprite = new ent.Sprite({
 				width: 50,
 				height: 50,
 				imgSrc: lang.modulePath('lib/entity', '../assets/enemy1.png')

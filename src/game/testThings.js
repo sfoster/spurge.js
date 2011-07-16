@@ -80,16 +80,7 @@ define([
 			this.prepared = true;
 		}, 
 		_makeThing: function(bounds, sprite){
-			var sprite = lang.createObject({
-				img: new Image(),
-				loaded: false,
-				load: function(cb){
-					if(cb){
-						this.onload = cb;
-					}
-					this.img.src = this.imgSrc;
-				}
-			}, {
+			var sprite = new ent.Sprite({
 				width: 32,
 				height: 32,
 				imgSrc: lang.modulePath('game/tester', '../assets/spaceship.png')
