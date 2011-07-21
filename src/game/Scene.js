@@ -12,6 +12,7 @@ define([
 
 	var keysMap = {
 		13: "ENTER",
+		16: "SHIFT",
 		' ': "SPACE",
 		32: "SPACE",
 		37: "LEFTARROW",
