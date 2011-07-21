@@ -67,7 +67,7 @@ define([
 		}, 
 		start: function() {
 			if(!this.currentScene){
-				this.currentScene = 'welcome';
+				this.currentScene = this.scenes[0].id;
 			}
 			this.enterState(this.currentScene);
 		},
