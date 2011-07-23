@@ -131,7 +131,6 @@
 
 					scratchScene.enter();
 					
-					scratchScene.loop.updateStats = null;
 					sceneNode = scratchScene.node;
 					sceneNode.style.width = config.get("mapWidth") + "px";
 					sceneNode.style.height = config.get("mapHeight") + "px";
@@ -143,7 +142,7 @@
 							x: event.pageX, 
 							y: event.pageY
 						});
-					});
+					}, false);
 
 					scratchScene.addEventListener("newtarget", function(evt){
 						console.log("newtarget event: ", evt);

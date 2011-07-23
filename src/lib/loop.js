@@ -32,14 +32,13 @@ define([
 	}
 
 	var Loop = exports.Loop = Compose(Compose, function(){
-		console.log("lib/Loopable ctor: " + this.id);
+		console.log("lib/Loop ctor");
 	},
 	{
 		fps: 1000/60, // default frames/sec.
 
 		startLoop: function(){
-			console.log(this.id + " startLoop");
-
+			console.log("lib/Loop startLoop");
 			this.isRunning = true;
 			// build the main loop
 			this.runLoop = this.prepareLoop();
@@ -49,7 +48,6 @@ define([
 			var self = this;
 			var onEachFrame = function(cb) {
 				// only re-request anim frame if we're still running
-				console.log("onEachFrame");
 				var _cb = function() { 
 					if(self.isRunning){
 						cb(); requestAnimFrame(_cb); 
@@ -57,10 +55,10 @@ define([
 				};
 				_cb();
 			};
-			this.onEachFrame = onEachFrame;
-			this.onEachFrame(lang.bind(this, this.runLoop));
+			// kick it off
+			console.log("lib/Loop kick it off");
+			onEachFrame(lang.bind(this, this.runLoop));
 		},
-		
 		prepareLoop: function(){
 			// experiment, with the scene as host of the main game loop
 			// as we have some "scenes" that don't need a loop at all,

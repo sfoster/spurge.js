@@ -148,8 +148,7 @@ define([], function (){
         i = document.createElement("div");
         i.style.fontFamily = "Helvetica, Arial, sans-serif";
         i.style.textAlign = "left";
-        i.style.fontSize = 
-        "9px";
+        i.style.fontSize = "9px";
         i.style.color = "rgb(" + b.ms.fg.r + "," + b.ms.fg.g + "," + b.ms.fg.b + ")";
         i.style.margin = "0px 0px 1px 3px";
         i.innerHTML = '<span style="font-weight:bold">MS</span>';
@@ -165,8 +164,9 @@ define([], function (){
         r.fillRect(0, 0, a.width, a.height);
         F = r.getImageData(0, 0, a.width, a.height);
         try {
-            if (webkitPerformance && webkitPerformance.memory.totalJSHeapSize) x = 
-            3
+            if (typeof webkitPerformance !== "undefined" && webkitPerformance.memory.totalJSHeapSize){
+				x = 3;
+			}
         } catch(L) {}
         j = document.createElement("div");
         j.style.backgroundColor = "rgb(" + Math.floor(b.mem.bg.r / 2) + "," + Math.floor(b.mem.bg.g / 2) + "," + Math.floor(b.mem.bg.b / 2) + ")";
