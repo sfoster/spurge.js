@@ -1,4 +1,6 @@
 define([], function(){
+	// from: 
+	// 	https://github.com/sebleedelisle/JavaScript-PixelPounding-demos/blob/master/libs/Vector2.js
 	console.log("vector module");
 
 	var Vector2 = function (x,y) {
