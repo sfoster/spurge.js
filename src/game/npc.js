@@ -94,8 +94,8 @@ define([
 			// adjust so we put our mid-point over the target
 			// presumably a collision will occur before that point
 			this.target = { 
-				x: target.x + this.width/2,
-				y: target.y + this.height/2
+				x: target.x - this.width/2,
+				y: target.y - this.height/2
 			};
 			console.log(this.id + " got new target: ", JSON.stringify(this.target));
 		},
