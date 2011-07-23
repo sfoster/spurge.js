@@ -24,9 +24,9 @@ define([
 	})();
 
 	if(exports.monitorStats){
-		var renderStats = exports.renderStats = new Stats();
+		// var renderStats = exports.renderStats = new Stats();
 		var updateStats = exports.updateStats = new Stats();
-		document.body.appendChild(renderStats.domElement);
+		// document.body.appendChild(renderStats.domElement);
 		document.body.appendChild(updateStats.domElement);
 		
 	}
@@ -70,7 +70,6 @@ define([
 				nextGameTick = (new Date).getTime(), 
 				frameCount = 0;
 				
-			console.log("building main loop, with this: ", this.id);
 			return function() {
 				loops = 0;
 				var now = (new Date).getTime();
@@ -82,7 +81,7 @@ define([
 					loops++;
 				}
 				
-				exports.renderStats && renderStats.update();
+				// exports.renderStats && renderStats.update();
 				this.redraw(++frameCount);
 			};
 
