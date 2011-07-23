@@ -1,20 +1,23 @@
-define(['lib/rosewood', "lib/lang", "lib/config"], function (
-		rw,  // Rosewood module
-		lang, 
-		config
-	){
-		console.log("npc module");
+define([
+		'lib/lang',
+		'lib/Compose'
+	], function (lang, Compose){
+
+	console.log("npc module");
+	var after = Compose.after, 
+		before = Compose.before, 
+		from = Compose.from;
+
+	// Ported to Compose.js ...
+	// but otherwise stale
+	
 	// define main enemy entities
 	var sprites = {}, 
-		assetsDir = lang.modulePath("lib/rosewood", "../assets");
+		assetsDir = lang.modulePath("lib/npc", "../assets");
 
-	var Npc = function(id, args) {
-		// generic init
-		this.id = id;
-		lang.mixin(this, args || {});
-		this.base = new rw.Ent(id, this.spriteId, this.width, this.height);
-	};
-	lang.mixin(Npc.prototype, {
+	var Npc = Compose(Compose, function(args) {
+		// generic ctor
+	}, {
 		hitType: "npc",
 		frameCount: 0,
 		_npc: true,
@@ -31,15 +34,15 @@ define(['lib/rosewood', "lib/lang", "lib/config"], function (
 			this.updateMethods.forEach(function(name){
 				this[name].call(this, x1, y1, x2, y2);
 			}, this);
-		}
+		},
+		seekTarget: function(){
+			// target seeking behavior
+
+		},
+		
 	});
 
-	var Enemy = function(id, args) {
-		Enemy.superclass.constructor.apply(this, arguments);
-	};
-	lang.extend(Enemy, Npc);
-
-	lang.mixin(Enemy.prototype, {
+	var Enemy = Compose(Npc, {
 		spriteId: 'enemy',
 		hitType: "npc",
 		width: 50,
@@ -47,47 +50,10 @@ define(['lib/rosewood', "lib/lang", "lib/config"], function (
 		shootInterval: 2000, // shoot every 2s
 		speed: 1,
 		missilesShot: 0,
-		updateMethods: Npc.prototype.updateMethods.concat(["seekTarget"]),
-		init: function(){
-			Enemy.superclass.init.apply(this);
+		updateMethods: ["seekTarget"].concat(Npc.prototype.updateMethods),
+		init: after(function(){
 			this.lastShotTime = this.startTime = (new Date()).getTime();
-		},
-		seekTarget: function(x1, y1, x2, y2){
-			// target seeking behavior
-			// move *very slowly*
-			if(this.frameCount % 10) {
-				return;
-			}
-			var now = (new Date()).getTime(); // frame based rather than time?
-			var speed = this.speed;
-			var target = this.target || game.getTarget();
-			// calculate center point
-			var cX = x1 + ((x2 -x1) * 0.5), 
-				cY = y1 + ((y2 -y1) * 0.5);
-			var tX = Math.round(target.x), tY = Math.round(target.y);
-			
-			// calculate x/y move offsets
-			var deltaX = Math.abs(Math.abs(tX) - Math.abs(cX)), 
-				deltaY = Math.abs(Math.abs(tY) - Math.abs(cY));
-				
-			var moveX = tX > cX ? Math.min(2, tX - cX) * speed : Math.min(2, cX - tX) * -1 * speed, 
-				moveY = tY > cY ? Math.min(2, tY - cY) * speed : Math.min(2, cY - tY) * -1 * speed;
-
-			// console.log("moving to: ", moveX, moveY);
-			// console.log("time to next shot: ", this.lastShotTime + this.shootInterval -now);
-			if(
-				(now - this.lastShotTime > this.shootInterval)
-			) {
-				// shooting distance
-				this.lastShotTime = now;
-				console.log("Deltas: ", deltaY, deltaX);
-				if(deltaY + deltaX > 10) {
-					this.shoot({ x: cX, y: cY}, { x: tX, y: tY });
-					this.shootInterval += 1000;
-				}
-			}
-			this.base.move(moveX,moveY);
-		},
+		}),
 		shoot: function(source, target){
 			// make a missile entity
 			// provide it with target coords
@@ -97,34 +63,27 @@ define(['lib/rosewood', "lib/lang", "lib/config"], function (
 				'missile'+(this.missilesShot++), 
 				{ target: target }
 			);
-			
-			// TODO: as missiles are destroyed they aren't spliced out of this array yet
-			rw.newEnt(missile).base.display(source.x,source.y,source.z || 100).end();
 		}
 	});
 
 	// register sprites
 	sprites['enemy'] = [assetsDir+"/enemy1.png", 50, 50];
 
-	var Missile = function(id, args) {
-		Missile.superclass.constructor.apply(this, arguments);
-		
+	var Missile = Compose(Npc, function(){
 		console.log("Creating missile: ", id);
 		this.target = args.target || { x:0, y: 0 };
 
 		var lastIdx = 0, 
 			boundsX = config.get("mapWidth"), 
 			boundsY = config.get("mapHeight"); 
-	};
-	lang.extend(Missile, Npc);
-	lang.mixin(Missile.prototype, {
+	}, {
 		frameidx: 0,
 		speed: 2,
 		width: 16,
 		height: 16,
 		hitType: "missile",
 		spriteId: 'fireball.f0',
-		updateMethods: Npc.prototype.updateMethods.concat(["seekTarget"]),
+		updateMethods: ["seekTarget"].concat(Npc.prototype.updateMethods),
 		
 		seekTarget: function(x1, y1, x2, y2) {
 			var target = this.target, 
