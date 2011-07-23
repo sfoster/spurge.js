@@ -36,6 +36,7 @@ define([
 			} else {
 				this.render(gameNode);
 			}
+			return this;
 		},
 		
 		// update: notimpl("update"),
@@ -43,10 +44,14 @@ define([
 			console.log( this.id +" Initial Scene rendering:", container);
 			// console.log("scene node: ", this.node);
 
+			// render all registered entities
+			// which creates their DOM and places them on the stage
+			// any entities creates later should render themselves
 			var ents = this.entities || [];
 			for(var i=0, len=ents.length; i<len; i++){
 				ents[i].render(this.node);
 			}
+			return this;
 		}),
 		exit: function(){
 			console.log(this.id +" Scene exit");
