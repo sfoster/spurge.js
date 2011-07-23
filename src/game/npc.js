@@ -3,7 +3,8 @@ define([
 		'lib/Compose',
 		'lib/entity',
 		'lib/state',
-	], function (lang, Compose, ent, Stateful){
+		'lib/collision',
+	], function (lang, Compose, ent, Stateful, collision){
 
 	var after = Compose.after, 
 		before = Compose.before, 
@@ -11,6 +12,7 @@ define([
 
 	var exports = {};
 	console.log("defining TestThing");
+	
 	exports.TestThing = Compose(function(args){
 		if(args.bounds){
 			// each to his own boundaries
@@ -22,10 +24,11 @@ define([
 			y: Math.round(Math.random()) ? 1 : -1
 		};
 		this.decayTime = (new Date()).getTime() + (10e3 * Math.random());
-	}, ent.Actor, 
+	}, ent.Actor, collision.Collidable, 
 	{
 		type: "thing",
 		className: "thing",
+		collisionGroup: "Actors",
 		height: 0,
 		width: 0,
 		frameY: 0,
@@ -36,7 +39,6 @@ define([
 		direction: null,
 		bounds: null,
 		update: after(function(frameCount){
-			// placeholder move/do fn
 			// console.log("thing x/y: ", this.x, this.y);
 			var lastFrame = this._lastFrame || 0, 
 				now = (new Date).getTime(), 
@@ -74,18 +76,78 @@ define([
 			this.dirty("y", "x");
 		})
 	});
-	
-	exports.Target = Compose(function(args){
-	}, ent.Actor, {
+
+	exports.MovingThing = Compose(ent.Actor, function(args){
+		// add target-seeking behaviour
+	}, {
 		health: 1,
 		type: "target",
 		width: 50,
 		height: 50,
 		_firstUpdate: true,
 		className: "sprite static-target",
-		update: function(frameCount){
-			// doesn't do much
-			// just dies on first touch
+		speed: 2,// pixels per ms
+		hookEvents: after(function(){
+			this.scene.addEventListener("newtarget", lang.bind(this, "setTarget"));
+		}),
+		setTarget: function(target){
+			// adjust so we put our mid-point over the target
+			// presumably a collision will occur before that point
+			this.target = { 
+				x: target.x + this.width/2,
+				y: target.y + this.height/2
+			};
+			console.log(this.id + " got new target: ", JSON.stringify(this.target));
+		},
+		_moveToTarget: function(target){
+			var position = this,  // assumes 'this' has x, y properties
+				target = target || this.target;
+
+			//X distance to target, Y distance to target, and Euclidean distance
+			var	x, y, d;
+
+			//Velocity magnitudes
+			var vx, vy, v;
+
+			//Find x and y
+			x = (target.x - position.x);
+			y = (target.y - position.y);
+
+			//If we're within 1 pixel of the target already, just snap
+			//to target and stay there. Otherwise, continue
+			if((x*x + y*y) <= 1)
+			{
+				position.x = target.x;
+				position.y = target.y;
+			}
+			else
+			{
+				//Distance formula
+				var d = Math.sqrt((x*x + y*y));
+
+				//Could set our velocity to move the distance in a fixed time. 
+				//e.g. could match frame rate (1000/60)
+				// var v = (d * this.speed)/60;
+				
+				var v = this.speed;
+
+				//Keep v above 1 pixel per update, otherwise it may never get to
+				//the target. v is an absolute value thanks to the squaring of x
+				//and y earlier
+				if(v < 1){
+					v = 1;
+				}
+
+				//Similar triangles to get vx and vy
+				var vx = x * (v/d), 
+					vy = y * (v/d);
+
+				//Then update camera's position and we're done
+				position.x += vx;
+				position.y += vy;
+			}
+		},
+		update: after(function(frameCount){
 			var lastFrame = this._lastFrame || 0, 
 				now = (new Date).getTime();
 			
@@ -94,12 +156,36 @@ define([
 				return;
 			}
 			if(this._firstUpdate){
-				this.dirty("y", "x");
+				console.log("_firstUpdate for thing: ", this.x, this.y);
+				// this.dirty("y", "x");
 				this._firstUpdate = false;
 			}
-		}
+
+			var target = this.target;
+			if(target){
+				if(target.x !== this.x && target.y !== this.y){
+					this._moveToTarget(target);
+					this.dirty("y", "x");
+				} else {
+					target = this.target = null;
+				}
+			}
+			// stop if no target, i.e. don't update x,y
+			return this;
+		})
 		
 	});
+
+	exports.Barrier = Compose(function(args){
+	}, ent.Actor, {
+		className: "sprite static-barrier",
+		width: 10,
+		height: 10,
+		
+		// a thing we can bump into
+	});
+	
+	
 	
 	return exports;
 });

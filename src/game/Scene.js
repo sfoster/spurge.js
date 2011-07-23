@@ -10,6 +10,7 @@ define([
 		before = Compose.before, 
 		from = Compose.from;
 
+	// TODO: move this keys manager elsewhere
 	var keysMap = {
 		13: "ENTER",
 		16: "SHIFT",
