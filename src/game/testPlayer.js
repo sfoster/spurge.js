@@ -32,7 +32,7 @@ define([
 		},
 		update: function(frameCount){
 			this.timestamp = (new Date()).getTime();
-			if(this.timestamp >= this.endTime) {
+			if(this.stop) {
 				console.log("stopping at: ", this.timestamp);
 				return this.stopLoop();
 			}
@@ -68,7 +68,7 @@ define([
 			
 			for(var i=0; i<2; i++){
 				entities.push( 
-					new npc.Target({
+					new npc.MovingThing({
 						id: "target_"+i,
 						bounds: bounds,
 						x: Math.random() * (bounds.x - 50),
@@ -86,26 +86,41 @@ define([
 				x: Math.random() * (bounds.x - 50),
 				y: Math.random() * (bounds.y - 50),
 				sprite: targetSprite, 
+				speed: 1,
 				update: after(function(){
+					var speed = this.speed, 
+					lastRotation = this.rotation;
+					if(activeKeys.SHIFT){
+						speed*=3;
+						console.log("SHIFT speed up");
+					}
 					if(activeKeys.UPARROW){
-						this.y -= 1;
+						this.y -= speed;
+						this.rotation = 0;
 						this.dirty("y");
 					}
 					if(activeKeys.DOWNARROW){
-						this.y += 1;
+						this.y += speed;
+						this.rotation = 180;
 						this.dirty("y");
 					}
 					if(activeKeys.LEFTARROW){
-						this.x -= 1;
+						this.x -= speed;
+						this.rotation = 270;
 						this.dirty("x");
 					}
 					if(activeKeys.RIGHTARROW){
-						this.x += 1;
+						this.x += speed;
+						this.rotation = 90;
 						this.dirty("x");
+					}
+					if(lastRotation != this.rotation) {
+						this.dirty("rotation");
 					}
 				})
 			});
 			
+			window.you = you;
 			entities.push(you);
 			// hook up their events
 			// TODO: pass entity the scene so they can register their own events?
