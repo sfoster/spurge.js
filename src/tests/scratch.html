@@ -25,9 +25,9 @@
 				'lib/entity',
 				'game/npc',
 				'game/Scene',
-				'lib/Loopable',
+				'lib/loop',
 				'game/config'
-			], function(lang, Compose, vector, ent, npc, Scene, Loopable, config){
+			], function(lang, Compose, vector, ent, npc, Scene, loop, config){
 
 				var after = Compose.after, 
 					before = Compose.before, 
@@ -35,14 +35,18 @@
 
 				var scene = window.scratchScene = Compose.create(function(){
 					console.log("scratchScene scene ctor");
-				}, Scene, Loopable,
+					this.loop = new loop.Loop({
+						update: lang.bind(this, "update"),
+						redraw: lang.bind(this, "redraw")
+					});
+				}, Scene, 
 				{
 					id: "scratchScene",
 					className: "scene scene-world",
 
 					enter: after(function(){
 						console.log("entering testThings scene");
-						this.startLoop();
+						this.loop.startLoop();
 						// run for just 10 seconds
 						this.endTime = this.startTime + 10000;
 					}),
@@ -53,10 +57,10 @@
 
 					update: function(frameCount){
 						this.timestamp = (new Date()).getTime();
-						// if(this.timestamp >= this.endTime) {
-						// 	console.log("stopping at: ", this.timestamp);
-						// 	return this.stopLoop();
-						// }
+						if(this.timestamp >= this.endTime) {
+							console.log("stopping at: ", this.timestamp);
+							return this.exit();
+						}
 
 						// update logic: 
 						// process rules
@@ -66,7 +70,7 @@
 					render: from(Scene),
 					exit: before(function(){
 						console.log("Scene exit, isRunning=false, clearing interval: ", this._intervalId);
-						this.stopLoop();
+						this.loop.stopLoop();
 					}),
 					load: from(Scene),
 					unload: from(Scene),
@@ -80,9 +84,17 @@
 							thing = null, 
 							entities = this.entities
 						;
+
+						var crabSprite = new ent.Sprite({
+							width: 50,
+							height: 50,
+							imgSrc: lang.modulePath('game/Scene', '../assets/crab.png')
+						});
+						crabSprite.load();
+						
 						console.log("bounds: ", bounds);
 						
-						entities.push( this._makeThing(bounds) );
+						entities.push( this._makeThing(bounds, crabSprite) );
 						
 						// TODO: pass entity the scene so they can register their own events?
 						// lang.forEach(entities, function(thing){
@@ -91,16 +103,17 @@
 
 						this.prepared = true;
 					}, 
-					_makeThing: function(bounds){
+					_makeThing: function(bounds, sprite){
 						var thing = new npc.MovingThing({
 							id: "thing",
 							scene: this, // give the entity a reference to the scene
 							width: 50,
 							height: 50,
 							bounds: bounds,
-							frameY: 1,
+							sprite: sprite,
+							frameY: 0,
 							x: Math.random() * (bounds.x - 50),
-							y: Math.random() * (bounds.y - 50),
+							y: Math.random() * (bounds.y - 50)
 						});
 						console.log("made thing with x, y: ", thing.x, thing.y);
 						return thing;
