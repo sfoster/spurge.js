@@ -123,13 +123,13 @@ define([
 			else
 			{
 				//Distance formula
-				var d = Math.sqrt((x*x + y*y));
+				d = Math.sqrt((x*x + y*y));
 
 				//Could set our velocity to move the distance in a fixed time. 
 				//e.g. could match frame rate (1000/60)
 				// var v = (d * this.speed)/60;
 				
-				var v = this.speed;
+				v = this.speed;
 
 				//Keep v above 1 pixel per update, otherwise it may never get to
 				//the target. v is an absolute value thanks to the squaring of x
@@ -139,7 +139,7 @@ define([
 				}
 
 				//Similar triangles to get vx and vy
-				var vx = x * (v/d), 
+				vx = x * (v/d), 
 					vy = y * (v/d);
 
 				//Then update camera's position and we're done

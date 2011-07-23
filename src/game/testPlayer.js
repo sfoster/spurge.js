@@ -4,8 +4,8 @@ define([
 		'lib/entity',
 		'game/npc',
 		'game/Scene',
-		'lib/Loopable'
-	], function (lang, Compose, ent, npc, Scene, Loopable){
+		'lib/loop'
+	], function (lang, Compose, ent, npc, Scene, loop){
 
 	var after = Compose.after, 
 		before = Compose.before, 
@@ -14,14 +14,18 @@ define([
 	return Compose.create(function(){
 		console.log("testPlayer scene ctor");
 		console.log("controls: ", this.controls);
-	}, Scene, Loopable,
+		this.loop = new loop.Loop({
+			update: lang.bind(this, "update"),
+			redraw: lang.bind(this, "redraw")
+		});
+	}, Scene,
 	{
 		id: "testPlayer",
 		className: "scene scene-world",
 
 		enter: after(function(){
 			console.log("entering testPlayer scene");
-			this.startLoop();
+			this.loop.startLoop();
 			// run for just 10 seconds
 			this.endTime = this.startTime + 10000;
 			this.controls.init();
@@ -34,7 +38,7 @@ define([
 			this.timestamp = (new Date()).getTime();
 			if(this.stop) {
 				console.log("stopping at: ", this.timestamp);
-				return this.stopLoop();
+				return this.loop.stopLoop();
 			}
 			// update logic: 
 			// process rules
@@ -44,7 +48,7 @@ define([
 		render: from(Scene),
 		exit: before(function(){
 			console.log("Scene exit, isRunning=false, clearing interval: ", this._intervalId);
-			this.stopLoop();
+			this.loop.stopLoop();
 		}),
 		load: from(Scene),
 		unload: from(Scene),
@@ -70,6 +74,7 @@ define([
 				entities.push( 
 					new npc.MovingThing({
 						id: "target_"+i,
+						scene: this,
 						bounds: bounds,
 						x: Math.random() * (bounds.x - 50),
 						y: Math.random() * (bounds.y - 50),
@@ -80,8 +85,9 @@ define([
 			
 			var activeKeys = this.controls.keys;
 			
-			var you = Compose.create(npc.Target, {
+			var you = Compose.create(npc.MovingThing, {
 				id: "player_thing",
+				scene: this,
 				bounds: bounds,
 				x: Math.random() * (bounds.x - 50),
 				y: Math.random() * (bounds.y - 50),
@@ -126,6 +132,9 @@ define([
 			// TODO: pass entity the scene so they can register their own events?
 			lang.forEach(entities, function(thing){
 				// hook up this entity to the scene update events
+				if(!thing.handles) {
+					debugger;
+				}
 				thing.handles.push(
 					this.addEventListener("update", lang.bind(thing, "update")),
 					this.addEventListener("redraw", lang.bind(thing, "redraw"))

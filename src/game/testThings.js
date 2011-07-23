@@ -4,8 +4,8 @@ define([
 		'lib/entity',
 		'game/npc',
 		'game/Scene',
-		'lib/Loopable'
-	], function (lang, Compose, ent, npc, Scene, Loopable){
+		'lib/loop'
+	], function (lang, Compose, ent, npc, Scene, loop){
 
 	var after = Compose.after, 
 		before = Compose.before, 
@@ -13,14 +13,18 @@ define([
 
 	return Compose.create(function(){
 		console.log("testThings scene ctor");
-	}, Scene, Loopable,
+		this.loop = new loop.Loop({
+			update: lang.bind(this, "update"),
+			redraw: lang.bind(this, "redraw")
+		});
+	}, Scene,
 	{
 		id: "testThings",
 		className: "scene scene-world",
 
 		enter: after(function(){
 			console.log("entering testThings scene");
-			this.startLoop();
+			this.loop.startLoop();
 			// run for just 10 seconds
 			this.endTime = this.startTime + 10000;
 		}),
@@ -37,7 +41,7 @@ define([
 			this.timestamp = (new Date()).getTime();
 			if(this.timestamp >= this.endTime) {
 				console.log("stopping at: ", this.timestamp);
-				return this.stopLoop();
+				return this.loop.stopLoop();
 			}
 			// update logic: 
 			// process rules
@@ -47,7 +51,7 @@ define([
 		render: from(Scene),
 		exit: before(function(){
 			console.log("Scene exit, isRunning=false, clearing interval: ", this._intervalId);
-			this.stopLoop();
+			this.loop.stopLoop();
 		}),
 		load: from(Scene),
 		unload: from(Scene),

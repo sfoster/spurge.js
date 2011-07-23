@@ -8,6 +8,10 @@ define([
 		before = Compose.before, 
 		from = Compose.from;
 
+	var exports = {
+		monitorStats: true
+	}
+
 	var requestAnimFrame = (function(){
 		return  window.requestAnimationFrame       || 
 			window.webkitRequestAnimationFrame     || 
@@ -19,17 +23,15 @@ define([
 			};
 	})();
 
-
-	var monitorStats = true;
-	if(monitorStats){
-		var renderStats = new Stats();
-		var updateStats = new Stats();
+	if(exports.monitorStats){
+		var renderStats = exports.renderStats = new Stats();
+		var updateStats = exports.updateStats = new Stats();
 		document.body.appendChild(renderStats.domElement);
 		document.body.appendChild(updateStats.domElement);
 		
 	}
 
-	var Loopable = Compose(function(){
+	var Loop = exports.Loop = Compose(Compose, function(){
 		console.log("lib/Loopable ctor: " + this.id);
 	},
 	{
@@ -74,13 +76,13 @@ define([
 				var now = (new Date).getTime();
 				while (now > nextGameTick) {
 					// we'll update more than we'll draw..
-					monitorStats && updateStats.update();
+					exports.updateStats && updateStats.update();
 					this.update();
 					nextGameTick += skipTicks;
 					loops++;
 				}
 				
-				monitorStats && renderStats.update();
+				exports.renderStats && renderStats.update();
 				this.redraw(++frameCount);
 			};
 
@@ -94,5 +96,6 @@ define([
 		}
 	});
 	
-	return Loopable;
+	return exports;
+	
 });

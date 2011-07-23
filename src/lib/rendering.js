@@ -26,7 +26,6 @@ define([
 		},
 		render: function(container, posn){
 			// initial rendering
-			console.log(this.type + " Renderable.render");
 			if(!container){
 				container = document.body;
 			}
