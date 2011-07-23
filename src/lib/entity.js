@@ -25,8 +25,12 @@ define([
 	});
 
 	exports.Actor = Compose(Compose, function(){
-		this._dirty = {};
+		this._dirty = { x: true, y: true };
 		this.handles = [];
+		// active state is implicit in instantiation?
+		// hook into scene events we're interested in
+		// TODO: maybe move event names into an array to make subclassing easier?
+		this.hookEvents();
 	}, Renderable, 
 	{
 		// rendering
@@ -34,6 +38,15 @@ define([
 		// 	needs states for dead, alive, shoot, hit(?)
 		// health, stats
 		// 
+		hookEvents: function(){
+			var scene = this.scene; 
+			if(scene){
+				this.handles.push(
+					scene.addEventListener("update", lang.bind(this, "update")),
+					scene.addEventListener("redraw", lang.bind(this, "redraw"))
+				);
+			}
+		},
 		redraw: from(Renderable, "update"), 
 		dirty: function(){
 			lang.forEach(arguments, function(name){
@@ -42,7 +55,7 @@ define([
 			return this;
 		},
 		update: function(){
-			this._dirty = {};
+			// TODO: process rules, behaviour
 		},
 		destroy: function(){
 			var hdl = null;
