@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Audio Test</title>
+	<script src="../lib/curl.js"></script>
+	<script>
+		// some <script data-main=""> semantics to reduce this boilerplate 
+		require({
+			baseUrl: '..',
+			paths: {
+				assets: '../assets'
+			}
+		}, [
+			'lib/lang',
+			'lib/audio'
+		], function(lang, audio){
+			// TODO: need to rework the audio module 
+			// and create a player class that can manage sprites
+			// at arbitrary offsets and lengths
+			
+			
+			var tracks = [];
+
+			// add each audio sprite as a track
+		    tracks.push(new audio.Track(
+				'../assets/testSyllables.mp3', // src
+				0.05, // spriteLength
+				0.1 //audioLead
+			));
+			
+			var player = {
+				tracks: tracks,
+				play: function (position) {
+					var i = tracks.length,
+						track = null;
+
+					while (i--) {
+						if (tracks[i].playing === false) {
+							track = tracks[i];
+							break;
+						} else if (track === null || tracks[i].lastUsed < track.lastUsed) {
+							track = tracks[i];
+						}
+					}
+
+					if (track) {
+						track.play(position);
+					} else {
+						// console.log('could not find a track to play :(');
+					}
+				}
+			};
+			lang.forEach(tracks, function(track){
+				track.player = player;
+			});
+
+			// myaudiosprite.mp3 is the complete audio sprite
+			// 1 = the number of tracks, increase this for the desktop
+			// 1 = the length of the individual audio clip
+			// 0.25 = the lead on the audio - hopefully zero, but in case any junk is added
+
+
+			// Usage: player.play(position)
+			window.onload = function(){
+				var node = document.getElementById("testBtn");
+				node.addEventListener("click", function(evt){
+					console.log("audio test btn clicked");
+					console.log("player: ", player);
+					// FIXME: need to 'play' twice before audio plays?
+					player.play(0);
+				}, false);
+			}
+		});
+	</script>
+</head>
+<body>
+
+
+	<audio controls="controls">
+		<source src="../assets/testSyllables.mp3" type="audio/mp3"/>
+	</audio>
+	<hr/>
+	<button id="testBtn">Play first audio sprite</button>
+</body>
+</html>
