@@ -7,6 +7,29 @@ define([
 	// templating
 	// spriting
 	// cssx to require stylesheet?
+	var strUA = navigator.userAgent.toLowerCase();
+	var ua = strUA.indexOf("webkit") > -1 ? 'webkit' : 
+		strUA.indexOf("gecko") > -1 ? 'gecko' : 
+		strUA.indexOf("opera") > -1 ? 'opera' : 'unknown';
+		
+	var addClass = function(obj, cls) {
+		// remove existing 
+		var className = (' '+ obj.className + ' ').replace(
+			new RegExp('\\s+'+cls+'\\s+', 'g'), 
+			' '
+		);
+		// tack it on the end
+		obj.className = className.substring(1) + cls;
+	}
+	var removeClass = function(obj, cls) {
+		// remove existing 
+		var className = (' '+ obj.className + ' ').replace(
+			new RegExp('\\s+'+cls+'\\s+', 'g'), 
+			' '
+		);
+		obj.className = className.substring(1);
+	}
+	
 	var Renderable = {
 		_dirty: null,
 		width: 0,
@@ -29,7 +52,7 @@ define([
 			if(!container){
 				container = document.body;
 			}
-			var node = this.node = document.createElement("div"); 
+			var node = this.node = document.createElement("div");
 			node.className = this.className;
 			var dirty = this._dirty || (this._dirty = {});
 			dirty.x = dirty.y = true; // we'll pick up width/height from css
@@ -73,6 +96,14 @@ define([
 						break;
 					case "innerContent": 
 						node.innerHTML = this.innerContent;
+						break;
+					case "glow":
+						if(this.glow) {
+							addClass(this, 'glow');
+						} else {
+							removeClass(this, 'glow');
+						}
+						node.className = this.className;
 						break;
 					default: 
 						ns[key] = this[key] + "px";

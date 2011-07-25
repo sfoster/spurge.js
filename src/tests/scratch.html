@@ -12,7 +12,8 @@
 		<script src="../lib/curl.js"></script>
 		<script>
 			// some <script data-main=""> semantics to reduce this boilerplate 
-			console.log("requiring qtower");
+			var game = {};
+			
 			require({
 				baseUrl: '..',
 				paths: {
@@ -33,16 +34,20 @@
 					before = Compose.before, 
 					from = Compose.from;
 
-				var scene = window.scratchScene = Compose.create(function(){
+				game.npc = npc;
+				
+				var scene = game.scratchScene = Compose.create(function(){
 					console.log("scratchScene scene ctor");
 					this.loop = new loop.Loop({
 						update: lang.bind(this, "update"),
 						redraw: lang.bind(this, "redraw")
 					});
+					this.config = config; // keep a ref. to config
 				}, Scene, 
 				{
 					id: "scratchScene",
 					className: "scene scene-world",
+
 
 					enter: after(function(){
 						console.log("entering testThings scene");
@@ -94,7 +99,8 @@
 						
 						console.log("bounds: ", bounds);
 						
-						entities.push( this._makeThing(bounds, crabSprite) );
+						var crab = game.theCrab = this._makeThing(bounds, crabSprite);
+						entities.push( crab );
 						
 						// TODO: pass entity the scene so they can register their own events?
 						// lang.forEach(entities, function(thing){
@@ -119,49 +125,56 @@
 						return thing;
 					}
 				});
-				window.onload = function(){
-
-					// var itv = setInterval(function(){
-					// 	thing.update();
-					// }, 1000/60);
-					// 
-					gameNode = document.getElementById("playarea");
-					gameNode.style.width = config.get("mapWidth") + "px";
-					gameNode.style.height = config.get("mapHeight") + "px";
-
-					scratchScene.enter();
-					
-					sceneNode = scratchScene.node;
-					sceneNode.style.width = config.get("mapWidth") + "px";
-					sceneNode.style.height = config.get("mapHeight") + "px";
-				
-					
-					scratchScene.node.addEventListener("click", function(event){
-						//X distance to target, Y distance to target, and Euclidean distance
-						scratchScene.raiseEvent("newtarget", {
-							x: event.pageX, 
-							y: event.pageY
-						});
-					}, false);
-
-					scratchScene.addEventListener("newtarget", function(evt){
-						console.log("newtarget event: ", evt);
-						var spot = new npc.Barrier({
-							id: "barrier_" +(new Date()).getTime,
-							x: evt.x - 5,
-							y: evt.y -5,
-							scene: scratchScene,
-							className: "sprite static-spot",
-							_firstUpdate: true
-						});
-						spot.render(scratchScene.node);
-						scratchScene.entities.push(spot);
-					});
-					scratchScene.addEventListener("update", function(){
-						// console.log("scene update");
-					});
-				}
 			}); 
+			window.onload = function(){
+
+				// var itv = setInterval(function(){
+				// 	thing.update();
+				// }, 1000/60);
+				// 
+				var scratchScene = game.scratchScene, 
+					npc = game.npc,
+					config = scratchScene.config, 
+					gameNode = document.getElementById("playarea");
+					
+				gameNode.style.width = config.get("mapWidth") + "px";
+				gameNode.style.height = config.get("mapHeight") + "px";
+
+				scratchScene.enter();
+				// need to enter scene (and render) before scene.node is created
+				// ..this might be an issue...
+				
+				sceneNode = scratchScene.node;
+				sceneNode.style.width = config.get("mapWidth") + "px";
+				sceneNode.style.height = config.get("mapHeight") + "px";
+			
+				
+				scratchScene.node.addEventListener("click", function(event){
+					//X distance to target, Y distance to target, and Euclidean distance
+					scratchScene.raiseEvent("newtarget", {
+						x: event.pageX, 
+						y: event.pageY
+					});
+				}, false);
+
+				scratchScene.addEventListener("newtarget", function(evt){
+					console.log("newtarget event: ", evt);
+					var spot = new npc.Barrier({
+						id: "barrier_" +(new Date()).getTime,
+						x: evt.x - 5,
+						y: evt.y -5,
+						scene: scratchScene,
+						className: "sprite static-spot",
+						_firstUpdate: true
+					});
+					spot.render(scratchScene.node);
+					scratchScene.entities.push(spot);
+				});
+				scratchScene.addEventListener("update", function(){
+					// console.log("scene update");
+				});
+			}
+			
 		</script>
 	</head>
 	<body style="margin:0;padding:0;">

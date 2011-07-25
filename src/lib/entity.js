@@ -63,6 +63,31 @@ define([
 				hdl.remove();
 			}
 			this.unrender();
+		},
+		onHit: function(/*hitee*/entity){
+			console.log(this.id +": got hit");
+			// reset (we can get hit while this effect is tailing off)
+			var hitDecay = 64;
+
+			// we could apply different behavior depending on what we collided with
+			this.glow = hitDecay;
+			this.dirty('glow'); // next redraw will apply this glow effect
+			
+			// apply hit effect for a few ticks
+			if(!this._glowHitHdl){
+				// countdown by hooking the scene's update event
+				this._glowHitHdl = this.scene.addEventListener(
+					"update", 
+					lang.bind(this, function(){
+						if(--hitDecay <= 0){
+							this._glowHitHdl.remove();
+							delete this._glowHitHdl;
+							this.glow = false;
+							this.dirty('glow');
+						}
+					})
+				);
+			}
 		}
 	});
 	return exports;

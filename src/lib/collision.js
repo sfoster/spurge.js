@@ -24,6 +24,18 @@ define([
 		},
 		getGroup: function(name){
 			return this.__groupsByName[name];
+		}, 
+		rectsOverlap: function(x0, y0, w0, h0, x2, y2, w2, h2) {
+			// x/y, width, height of rectable 1
+			// x/y, width, height of rectable 2
+			
+		    if( x0 > (x2 + w2) || (x0 + w0) < x2) {
+				return false;
+			}
+		    if( y0 > (y2 + h2) || (y0 + h0) < y2) {
+				return false;
+			}
+		    return true
 		}
 	};
 
@@ -63,7 +75,11 @@ define([
 
 		// group: the name/id of the collision group this entity belongs to
 		// membership of a collision group determines which kinds of objects we can/cant collide with
-		collisionGroup: ''
+		collisionGroup: '', 
+		
+		onHit: function(/*hitee*/entity){
+			// do something when a collision occurs
+		}
 	});
 
 	// Players, Tiles, Doodads, Actors

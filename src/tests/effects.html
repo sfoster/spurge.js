@@ -1,0 +1,113 @@
+<html>
+	<head>
+		<link rel="StyleSheet" href="../css/tester.css">
+		<style>
+			.static-crab {
+				width: 50px;
+				height: 50px;
+			}
+			.scene-world {
+				border: 1px dotted #000;
+			}
+			.sprite-bg, .sprite-mg, .sprite-fg {
+				position: absolute;
+				position: top: 0; left: 0;
+				width: 100%;
+				height: 100%;
+			}
+			.sprite-bg {
+				background-color: red;
+			}
+			.static-crab .sprite-bg {
+				-webkit-transition: width,height,left,top,box-shadow 2s linear;
+				background-color: transparent;
+				width: 20px;
+				height: 20px;
+				left: 15px;
+				top: 15px;
+				background-position: 0 -50px;
+
+				box-shadow:	0 0 10px #0ff;
+				-webkit-border-radius: 	25px;
+				border-radius: 			25px; 
+				-moz-border-radius: 	25px;
+			}
+			.static-crab .gothit {
+				-webkit-transition: width,height,left,top,box-shadow 5s linear;
+
+				width: 50px;
+				height: 50px;
+				margin: 0px;
+				left: 0; top: 0;
+
+				box-shadow:	0 0 25px #0ff;
+				-moz-box-shadow: 	0 0 25px #0ff;
+				box-shadow:			0 0 25px #0ff;				
+			}
+		</style>
+		<script src="../lib/curl.js"></script>
+		<script>
+			// some <script data-main=""> semantics to reduce this boilerplate 
+			var game = {};
+			
+			require({
+				baseUrl: '..',
+				paths: {
+					assets: '../assets'
+				}
+			}, [
+				'lib/lang',
+				'lib/compose',
+			], function(lang, Compose){
+
+				var after = Compose.after, 
+					before = Compose.before, 
+					from = Compose.from;
+				
+				function addClass(node, clz){
+					console.log("addClass: ", node, clz);
+					var classStr = clz + " " + node.className.split(clz).join(''); 
+					node.className = classStr.replace(/\s+/g, ' ');
+				}
+				function removeClass(node, clz){
+					var classStr = node.className.split(clz).join(''); 
+					node.className = classStr.replace(/\s+/g, ' ');
+				}
+				window.onload = function(){
+					var node = document.getElementById("crab"), 
+						elms = [],
+						cnodes = node.childNodes;
+						for(var i=0; i<cnodes.length; i++){
+							if(cnodes[i].nodeType !== 1) continue;
+							elms.push(cnodes[i]);
+						}
+						console.log("got elms: ", elms);
+						var bg = elms.shift(), 
+						mg = elms.shift(), 
+						fg = elms.shift();
+
+					
+					setTimeout(function(){
+						addClass(bg, 'gothit');
+						setTimeout(function(){
+							removeClass(bg, 'gothit');
+						}, 8000);
+					}, 1000)
+					// var fb = 
+				}
+			});
+			
+		</script>
+	</head>
+	<body style="margin:0;padding:0;">
+		<div id="playarea" style="height: 300px; margin-right:10px;">
+			<div class="scene scene-world" style="width: 640px; height: 480px; ">
+				<div class="sprite static-crab" id="crab" style="left: 45.776580069214106px; top: 86.1872263927944px;">
+					<div class="sprite-bg" style=""></div>
+					<div class="sprite-mg" style="display:none;background-image: url(../assets/crab.png); background-attachment: initial; background-origin: initial; background-clip: initial; background-color: initial; background-position: 0px 0px; background-repeat: no-repeat no-repeat; "></div>
+					<div class="sprite-fg"></div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
