@@ -1,14 +1,16 @@
-define(['lib/rosewood', "lib/lang", "lib/config"], function (
-		rw,  // Rosewood module
-		lang, 
-		config
-	){
-		console.log("map module");
-	// define main enemy entities
-	var sprites = {}, 
-		assetsDir = lang.get("assetsDir");;
+define([
+	"lib/lang", 
+	"lib/Compose"
+], function (lang, Compose){
+	/**
+	  * A module for serializing/deserializing map data
+	  * to represent a scene.
+	  * Static methods to parser/stringify
+	  * rendering needs to be in conjunction w. the scene
+	  * as it can provide the sprites, bounds, viewport etc.
+	  */
 
-	var layout = ''
+	var testLayout = ''
 		+ "#-#---#-#-#-"
 		+ "#-#---#-#-#-"
 		+ "#-#---#-#-#-"
@@ -18,7 +20,10 @@ define(['lib/rosewood', "lib/lang", "lib/config"], function (
 		+ "#-#-------#-"
 		+ "#-#-#-#-#-#-"
 	;
-	function parse(strLayout) {
+	var exports = {};
+	exports.parse = function(strLayout) {
+		// summary: 
+		// 	Deserialize an ascii-art representation of the map
 		var layout = [];
 		var strRows = strLayout.split("\n");
 		var typesMap = {};
@@ -39,27 +44,33 @@ define(['lib/rosewood', "lib/lang", "lib/config"], function (
 		});
 		return layout;
 	}
-	function render(layout) {
-		var curX = 0, 
-			curY = 0,
-			totalWidth = config.get("mapWidth"),
-			totalHeight = config.get("mapHeight");
-		
-		var x = totalWidth / layout[0].length, 
-			y = totalHeight / layout.length;
-			
-		layout.forEach(function(row){
-			row.forEach(function(col){
-				
+	
+	exports.Map = Compose(Compose, {
+		width: 0,
+		height: 0,
+		render: function(layout) {
+			var curX = 0, 
+				curY = 0,
+				totalWidth = config.get("mapWidth"),
+				totalHeight = config.get("mapHeight");
+
+			var x = totalWidth / layout[0].length, 
+				y = totalHeight / layout.length;
+
+			layout.forEach(function(row){
+				row.forEach(function(col){
+
+				})
+				curY += y;
 			})
-			curY += y;
-		})
-	}
+		}
+	})
 	sprites['wall'] = [assetsDir + '/Path.png', x, y];
 
 	return {
 		sprites: sprites,
-		render: render
+		render: render,
+		parse: parse
 	};
 });
 
