@@ -23,7 +23,7 @@ define([
 			x: Math.round(Math.random()) ? 1 : -1,
 			y: Math.round(Math.random()) ? 1 : -1
 		};
-		this.decayTime = (new Date()).getTime() + (10e3 * Math.random());
+		// this.decayTime = (new Date()).getTime() + (10e3 * Math.random());
 	}, ent.Actor, collision.Collidable, 
 	{
 		type: "thing",
@@ -46,9 +46,9 @@ define([
 				velY = this.direction.y, 
 				x = this.x, y = this.y; 
 
-			if(now >= this.decayTime) {
-				this.destroy();
-			}
+			// if(now >= this.decayTime) {
+			// 	this.destroy();
+			// }
 		
 			var newY = y + velY; 
 			if(newY < 0 || newY +this.height > this.bounds.y) {
