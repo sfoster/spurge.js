@@ -43,12 +43,20 @@ define(['lib/compose'], function(Compose){
 				return names;
 			}
 	})(Object.keys);
-	
-	var forEach = function(ar, fn, scope){
-		for(var i=0, len=ar.length; i<len; i++){
-			fn.call(scope || undefinedThis, ar[i], i, ar);
+
+	var arProto = Array.prototype;
+	var forEach = ("forEach" in arProto) ? 
+		// use native foreach, but we can handle arguments, NodeList etc. too
+		function(ar, fn, scope) {
+			return arProto.forEach.call(ar, fn, scope || undefinedThis );
+		} :
+		// shim for foreach
+		function(ar, fn, scope){
+			for(var i=0, len=ar.length; i<len; i++){
+				fn.call(scope || undefinedThis, ar[i], i, ar);
+			}
 		}
-	};
+	;
 	var forIn = function(obj, fn, scope){
 		for(var i in obj){
 			if(i in _empty) continue;
