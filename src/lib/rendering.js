@@ -68,49 +68,61 @@ define([
 			this.update();
 			container.appendChild(node);
 		},
-		update: function(){
-			// we expect top/left to change
-			// also sprite frame
-			var dirty = this._dirty || {};
-			var keys = lang.keys(dirty), 
-				node = this.node, 
-				ns = node.style;
-			
-			for(var key in dirty){
-				if(key in lang._empty) continue;
-				// translate properties to style properties
-				switch(key){
-					case "x":
-						ns.left = this.x + "px";
-						break;
-					case "y":
-						ns.top = this.y + "px";
-						break;
-					case "frameX":
-					case "frameY":
-					// update sprite
-						ns.backgroundPosition = [
-							this.frameX ? (this.width * this.frameX * -1) +"px" : 0,
-							this.frameY ? (this.height * this.frameY * -1) +"px" : 0
-						].join(" ");
-						break;
-					case "innerContent": 
-						node.innerHTML = this.innerContent;
-						break;
-					case "glow":
-						if(this.glow) {
-							addClass(this, 'glow');
-						} else {
-							removeClass(this, 'glow');
-						}
-						node.className = this.className;
-						break;
-					default: 
-						ns[key] = this[key] + "px";
+		update: (function(){
+			var empty = {};
+			// what doesn't change here? 
+			// node, node.style? (not often anyway)
+		
+			var update = function(){
+				var dirty = this._dirty || {}, 
+					node = this.node, 
+					ns = node.style;
+
+				// summary: 
+				// 		reflect changed properties into the DOM
+				for(var key in dirty){
+					// if(key in empty) continue;
+					// translate properties to style properties
+					handlers[key](key, this, node, ns);
 				}
 				this._dirty = {};
-			}
-		},
+			};
+			update.cache = {};
+
+			var handlers = {
+				"x": function(pname, self, node, ns){
+					ns.left = self.x + "px";
+				},
+				"y": function(pname, self, node, ns){
+					ns.top = self.y + "px";
+				},
+				// and frameY
+				"frameX": function(pname, self, node, ns){
+					// update sprite
+					ns.backgroundPosition = [
+						self.frameX ? (self.width * self.frameX * -1) +"px" : 0,
+						self.frameY ? (self.height * self.frameY * -1) +"px" : 0
+					].join(" ");
+				},
+				"innerContent": function(pname, self, node, ns){
+					node.innerHTML = self.innerContent;
+				},
+				"glow": function(pname, self, node, ns){
+					if(self.glow) {
+						addClass(self, 'glow');
+					} else {
+						removeClass(self, 'glow');
+					}
+					node.className = self.className;
+				},
+				"default": function(pname, self, node, ns){
+					ns[key] = self[pname] + "px";
+				}
+			};
+			handlers["frameY"] = handlers["frameX"];
+			
+			return update;
+		})(),
 		unrender: function(){
 			if(this.node && this.node.parentNode) {
 				this.node.parentNode.removeChild(this.node);
