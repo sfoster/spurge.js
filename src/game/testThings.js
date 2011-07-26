@@ -43,8 +43,7 @@ define([
 				console.log("stopping at: ", this.timestamp);
 				return this.loop.stopLoop();
 			}
-			// update logic: 
-			// process rules
+			
 			// call update on all active entities, 
 			this.raiseEvent("update");
 		},

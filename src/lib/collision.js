@@ -63,7 +63,7 @@ define([
 	collision.registerGroup(blockerGroup.name, blockerGroup);
 
 	collision.Collidable = Compose(function(){
-		console.log("collidable");
+		// console.log("collidable");
 	},{
 		// summary: 
 		// 	mixin for things that need collision behavior
