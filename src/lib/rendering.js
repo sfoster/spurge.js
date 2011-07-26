@@ -71,13 +71,11 @@ define([
 		update: function(){
 			// we expect top/left to change
 			// also sprite frame
-			var dirty = this._dirty || {};
-			var keys = lang.keys(dirty), 
+			var dirty = this._dirty || {}, 
 				node = this.node, 
 				ns = node.style;
 			
 			for(var key in dirty){
-				if(key in lang._empty) continue;
 				// translate properties to style properties
 				switch(key){
 					case "x":
@@ -106,7 +104,12 @@ define([
 						node.className = this.className;
 						break;
 					default: 
-						ns[key] = this[key] + "px";
+						// default (rare?) is to copy this[key]
+						// straight into node.style
+						// e.g. 'width'
+						if(key in this && !(key in lang._empty)) {
+							ns[key] = this[key] + "px";
+						}
 				}
 				this._dirty = {};
 			}
