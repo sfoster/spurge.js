@@ -9,6 +9,9 @@ define([
 		from = Compose.from;
 
 	var exports = {};
+	
+	var registry = exports.registry = {};
+	
 	exports.Sprite = Compose(Compose, function(){
 		this.img = new Image();
 	}, {
@@ -24,12 +27,21 @@ define([
 		}
 	});
 
+	var actorId = 0;
+	
 	exports.Actor = Compose(Compose, function(){
 		this._dirty = { x: true, y: true };
 		this.handles = [];
 		// active state is implicit in instantiation?
-		// hook into scene events we're interested in
 		// TODO: maybe move event names into an array to make subclassing easier?
+		
+		// should have an id by now
+		// if not, invent one.
+		if(!this.id) {
+			this.id = "actor_"+(actorId++);
+		}
+		registry[this.id] = this;
+		// hook into scene events we're interested in
 		this.hookEvents();
 	}, Renderable, 
 	{
@@ -38,6 +50,7 @@ define([
 		// 	needs states for dead, alive, shoot, hit(?)
 		// health, stats
 		// 
+		collisionGroup: "Actors", // default
 		hookEvents: function(){
 			var scene = this.scene; 
 			if(scene){
@@ -63,6 +76,10 @@ define([
 				hdl.remove();
 			}
 			this.unrender();
+
+			registry[this.id] = null;
+			delete registry[this.id];
+			
 		},
 		onHit: function(/*hitee*/entity){
 			console.log(this.id +": got hit");
@@ -90,5 +107,8 @@ define([
 			}
 		}
 	});
+	// add collisionGroup as a static property
+	exports.Actor.collisionGroup = exports.Actor.prototype.collisionGroup;
+
 	return exports;
 });
