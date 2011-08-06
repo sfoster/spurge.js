@@ -3,7 +3,7 @@ define([
 		'lib/Compose',
 		'lib/entity',
 		'lib/state',
-	], function (lang, Compose, ent, Stateful){
+	], function (lang, Compose, entity, Stateful){
 
 	var after = Compose.after, 
 		before = Compose.before, 
@@ -25,10 +25,22 @@ define([
 		getGroup: function(name){
 			return this.__groupsByName[name];
 		}, 
+		registerMember: function(ent, name){
+			var group = this.__groupsByName[name], 
+				entId = ent.id || ent;
+			if(!group) {
+				throw new Exception("Cant register member "+entId+" of non-existent group:" + name);
+			} else {
+				console.log("Registering collidable entity "+entId+" in group: " + name);
+				group.members.push(entId);
+			}
+		},
 		rectsOverlap: function(x0, y0, w0, h0, x2, y2, w2, h2) {
-			// x/y, width, height of rectable 1
-			// x/y, width, height of rectable 2
+			// x/y, width, height of rectangle 1
+			// x/y, width, height of rectangle 2
 			
+			// left edge of box1 is right of right edge of box2
+			// right edge of box1 is left of left edge of box2
 		    if( x0 > (x2 + w2) || (x0 + w0) < x2) {
 				return false;
 			}
@@ -50,21 +62,21 @@ define([
 	});
 
 	var actorsGroup = new collision.Group({
-		id: "Actors",
-		description: "All active (non-player?) entities (i.e. the do or can move)"
+		name: "Actors",
+		description: "All active (non-player?) entities (i.e. the do or can move)",
+		collidesWith: ["Actors"]
 	});
 
 	var blockerGroup = new collision.Group({
-		id: "Blockers",
-		description: "Passive, non-player entities like walls, obstacles"
+		name: "Blockers",
+		description: "Passive, non-player entities like walls, obstacles",
+		collidesWith: ["Actors"]
 	});
 
 	collision.registerGroup(actorsGroup.name, actorsGroup);
 	collision.registerGroup(blockerGroup.name, blockerGroup);
 
-	collision.Collidable = Compose(function(){
-		// console.log("collidable");
-	},{
+	collision.Collidable = Compose({
 		// summary: 
 		// 	mixin for things that need collision behavior
 		// 	ghosty things simply don't add the Collidable trait
@@ -77,8 +89,76 @@ define([
 		// membership of a collision group determines which kinds of objects we can/cant collide with
 		collisionGroup: '', 
 		
-		onHit: function(/*hitee*/entity){
+		checkForCollisions: function(){
+			// get a list of all entities in my collision group I might collide with
+			var groupName = this.collisionGroup, 
+			 	group = groupName && collision.getGroup(this.collisionGroup), 
+				self = this,
+				rectsOverlap = collision.rectsOverlap, 
+				registry = entity.registry;
+				
+			// console.log(this.id + " checkForCollisions in group: " + groupName);
+			if(group) {
+				var entities = [];
+				lang.forEach(group.collidesWith, function(name){
+					var targGroup = collision.getGroup(name),
+					 	members = targGroup.members,
+						ent = null;
+					for(var i=0,len=members.length; i<len; i++){
+						ent = registry[members[i]];
+						if(!ent || ent == self) continue;
+						var boxArgs = [self.x, self.y, self.width, self.height,
+						ent.x, ent.y, ent.width, ent.height];
+						if(rectsOverlap.apply(null, boxArgs)){
+							console.log("overlap!", self, ent);
+							ent.onHit && ent.onHit(self);
+							self.onHit && self.onHit(ent);
+						}
+					}
+				});
+			}
+		},
+		
+		isBoundaryOverlap: function(box1, box2) {
+			var left1, left2, 
+				right1, right2, 
+				top1, top2, 
+				bottom1, bottom2;
+			
+			// box: {
+			// 	x: int px offset from left
+			// 	y: int px offset from top
+			// 	width: int px tile/sprite width
+			// 	height: int px tile/sprite height
+			// 	xOffset: optional offset from x, x+width for the collision
+			// 	yOffset: optional offset from y, y+height for the collision
+			// }
+
+			left1 = box1.x + (box1.xOffset || 0);
+			left2 = box2.x + (box2.xOffset || 0);
+			right1 = left1 + box1.width;
+			right2 = left2 + box2.width;
+			top1 = box1.y + (box1.yOffset || 0);
+			top2 = box2.y + (box1.yOffset || 0);
+			bottom1 = top1 + box1.height;
+			bottom2 = top2 + box2.height;
+
+			if (bottom1 < top2) return true;
+			if (top1 > bottom2) return true;
+
+			if (right1 < left2) return false;
+			if (left1 > right2) return false;
+
+			return true;
+		},
+
+		onHit: function(/*hitee*/ent){
 			// do something when a collision occurs
+		}
+	}, function(){
+		console.log("Collidable constructor, collisionGroup", this.collisionGroup, this);
+		if(this.collisionGroup){
+			collision.registerMember(this, this.collisionGroup);
 		}
 	});
 

@@ -133,7 +133,7 @@ define([
 			lang.forEach(entities, function(thing){
 				// hook up this entity to the scene update events
 				if(!thing.handles) {
-					debugger;
+					throw new Error("no handles for entity: ", thing);
 				}
 				thing.handles.push(
 					this.addEventListener("update", lang.bind(thing, "update")),
