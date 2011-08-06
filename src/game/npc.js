@@ -38,6 +38,7 @@ define([
 		decayTime: -1,
 		direction: null,
 		bounds: null,
+		_firstUpdate: true,
 		update: after(function(frameCount){
 			// console.log("thing x/y: ", this.x, this.y);
 			var lastFrame = this._lastFrame || 0, 
@@ -49,7 +50,12 @@ define([
 			// if(now >= this.decayTime) {
 			// 	this.destroy();
 			// }
-			this.checkForCollisions(); 
+			if(this._firstUpdate){
+				console.log("_firstUpdate for thing: ", this.x, this.y);
+				this._firstUpdate = false;
+			} else {
+				this.checkForCollisions(); 
+			}
 			
 			var newY = y + velY; 
 			if(newY < 0 || newY +this.height > this.bounds.y) {
