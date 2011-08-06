@@ -82,7 +82,7 @@ define([
 			
 		},
 		onHit: function(/*hitee*/entity){
-			console.log(this.id +": got hit");
+			// console.log(this.id +": got hit");
 			// reset (we can get hit while this effect is tailing off)
 			var hitDecay = 64;
 

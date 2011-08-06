@@ -95,9 +95,11 @@ define([
 			 	group = groupName && collision.getGroup(this.collisionGroup), 
 				self = this,
 				rectsOverlap = collision.rectsOverlap, 
-				registry = entity.registry;
+				registry = entity.registry, 
+				collidedAlready = {};
 				
 			// console.log(this.id + " checkForCollisions in group: " + groupName);
+			// TODO: currently, x => y and y => x will be checked
 			if(group) {
 				var entities = [];
 				lang.forEach(group.collidesWith, function(name){
@@ -106,13 +108,15 @@ define([
 						ent = null;
 					for(var i=0,len=members.length; i<len; i++){
 						ent = registry[members[i]];
-						if(!ent || ent == self) continue;
+						// skip entities we've already check in this loop (members of >1 groups?)
+						if(!ent || ent == self || collidedAlready[ent.id]) {
+							continue;
+						}
 						var boxArgs = [self.x, self.y, self.width, self.height,
 						ent.x, ent.y, ent.width, ent.height];
 						if(rectsOverlap.apply(null, boxArgs)){
-							console.log("overlap!", self, ent);
 							ent.onHit && ent.onHit(self);
-							self.onHit && self.onHit(ent);
+							collidedAlready[ent] = true;
 						}
 					}
 				});
