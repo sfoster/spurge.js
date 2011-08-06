@@ -28,7 +28,7 @@ define([
 	{
 		type: "thing",
 		className: "thing",
-		collisionGroup: "Actors",
+		collisionGroup: ent.Actor.collisionGroup,
 		height: 0,
 		width: 0,
 		frameY: 0,
@@ -49,7 +49,8 @@ define([
 			// if(now >= this.decayTime) {
 			// 	this.destroy();
 			// }
-		
+			this.checkForCollisions(); 
+			
 			var newY = y + velY; 
 			if(newY < 0 || newY +this.height > this.bounds.y) {
 				velY *= -1; 
@@ -77,19 +78,25 @@ define([
 		})
 	});
 
-	exports.MovingThing = Compose(ent.Actor, function(args){
+	exports.MovingThing = Compose(ent.Actor, collision.Collidable, function(args){
 		// add target-seeking behaviour
 	}, {
 		health: 1,
 		type: "target",
 		width: 50,
 		height: 50,
+
+		type: "movingthing",
+		collisionGroup: ent.Actor.collisionGroup,
+
 		_firstUpdate: true,
 		className: "sprite static-target",
 		speed: 2,// pixels per ms
+		
 		hookEvents: after(function(){
 			this.scene.addEventListener("newtarget", lang.bind(this, "setTarget"));
 		}),
+		
 		setTarget: function(target){
 			// adjust so we put our mid-point over the target
 			// presumably a collision will occur before that point
@@ -147,6 +154,7 @@ define([
 				position.y += vy;
 			}
 		},
+		
 		update: after(function(frameCount){
 			var lastFrame = this._lastFrame || 0, 
 				now = (new Date).getTime();
@@ -159,6 +167,8 @@ define([
 				console.log("_firstUpdate for thing: ", this.x, this.y);
 				// this.dirty("y", "x");
 				this._firstUpdate = false;
+			} else {
+				this.checkForCollisions(); 
 			}
 
 			var target = this.target;
@@ -172,8 +182,8 @@ define([
 			}
 			// stop if no target, i.e. don't update x,y
 			return this;
-		})
-		
+		}),
+		onHit: from(ent.Actor)
 	});
 
 	exports.Barrier = Compose(function(args){
