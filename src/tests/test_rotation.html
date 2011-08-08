@@ -28,8 +28,8 @@
 					assets: '../assets'
 				}
 			}, [
-				'lib/rendering'
-			], function(rendering){
+				'lib/domReady', 'lib/touch', 'lib/rendering'
+			], function(domReady, touch, rendering){
 				var ua = rendering.ua;
 				console.log("userAgent: ",ua);
 				rotate = function(elm, angle) {
@@ -49,12 +49,10 @@
 					elm.style[pname] = 'rotate('+angle+'deg)';
 				}
 
-				window.onload = function(){
+				domReady(function(){
+					touch.init();
 					var c = document.getElementById("box"), 
 						ctx = c.getContext("2d");
-					
-					console.log("context: ", ctx);
-					// ctx.strokeStyle = "red";
 					
 					for(var y=0; y<5; y++){
 						for(var x=0; x<5; x++){
@@ -71,7 +69,7 @@
 						}
 					}
 					
-					document.addEventListener("click", function(evt){
+					document.addEventListener("mouseup", function(evt){
 						console.log("click: ", evt);
 						var pt = {
 							x: evt.pageX, 
@@ -84,7 +82,7 @@
 					}, false);
 					
 					
-				};
+				});
 			}); 
 		</script>
 	</head>
