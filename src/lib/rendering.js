@@ -10,7 +10,9 @@ define([
 	var strUA = navigator.userAgent.toLowerCase();
 	var ua = strUA.indexOf("webkit") > -1 ? 'webkit' : 
 		strUA.indexOf("gecko") > -1 ? 'gecko' : 
-		strUA.indexOf("opera") > -1 ? 'opera' : 'unknown';
+		strUA.indexOf("opera") > -1 ? 'opera' : 
+		strUA.indexOf("internet explorer") > -1 ? 'ie' : 'unknown';
+		
 		
 	var addClass = function(obj, cls) {
 		// remove existing 
@@ -119,7 +121,8 @@ define([
 				this.node.parentNode.removeChild(this.node);
 				this.node = null;
 			}
-		}
+		},
+		ua: ua
 	};
 	return Renderable;
 });

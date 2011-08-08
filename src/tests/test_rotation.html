@@ -1,0 +1,95 @@
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="../css/tester.css"/>
+		<style>
+			#box {
+				border: 1px solid blue;
+			}
+			#cham {
+				-webkit-transition: box-shadow,background-color 0.05s,0.05s linear;
+				background: url('../assets/chameleon_silhouette.png') no-repeat;
+				width: 80px;
+				height: 80px;
+				z-index: 10;
+			}
+			.abs {
+				position: absolute;
+				top: 0;
+				left: 0;
+				z-index: 1;
+			}
+		</style>
+		<script src="../lib/curl.js"></script>
+		<script>
+			require = curl;
+			require({
+				baseUrl: '..',
+				paths: {
+					assets: '../assets'
+				}
+			}, [
+				'lib/rendering'
+			], function(rendering){
+				var ua = rendering.ua;
+				console.log("userAgent: ",ua);
+				rotate = function(elm, angle) {
+					// TODO: prefix isn't necessary for latest browser version e.g. FF5
+					switch(ua){
+						case 'webkit': 
+							pname = "WebkitTransform"; break;
+						case 'gecko': 
+							pname = "MozTransform"; break;
+						case 'ie': 
+							pname = "msTransform"; break;
+						case 'opera': 
+							pname = "OTransform"; break;
+						default: 
+							pname = "transform"
+					}
+					elm.style[pname] = 'rotate('+angle+'deg)';
+				}
+
+				window.onload = function(){
+					var c = document.getElementById("box"), 
+						ctx = c.getContext("2d");
+					
+					console.log("context: ", ctx);
+					// ctx.strokeStyle = "red";
+					
+					for(var y=0; y<5; y++){
+						for(var x=0; x<5; x++){
+							var pt = { x: (x*50), y: (y*50) };
+							ctx.strokeStyle = 'rgb('+pt.x+','+ pt.y+','+',55)';
+
+							var rad = Math.atan2(pt.y - 100, pt.x - 100);
+							var propn = 8 * (Math.PI+rad) / (Math.PI+Math.PI);
+							ctx.beginPath();
+							ctx.moveTo(100, 100);
+							ctx.lineTo(pt.x, pt.y);
+							// ctx.closePath();
+							ctx.stroke();
+						}
+					}
+					
+					document.addEventListener("click", function(evt){
+						console.log("click: ", evt);
+						var pt = {
+							x: evt.pageX, 
+							y: evt.pageY
+						};
+						var rad = Math.atan2(pt.y - 100, pt.x - 100), 
+							deg = rad * (180/Math.PI);
+						console.log("degrees: ", deg);
+						rotate(document.getElementById("cham"), deg);
+					}, false);
+					
+					
+				};
+			}); 
+		</script>
+	</head>
+	<body>
+		<canvas id="box" width="200" height="200" class="abs"></canvas>
+		<div id="cham" class="abs" style="top: 60px; left: 60px"></div>
+	</body>
+</html>
