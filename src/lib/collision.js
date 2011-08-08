@@ -100,7 +100,12 @@ define([
 			var groupName = this.collisionGroup, 
 			 	group = groupName && collision.getGroup(this.collisionGroup), 
 				self = this,
-				rectsOverlap = collision.rectsOverlap, 
+				selfPoint = {
+					x: self.x + (self.width/2),
+					y: self.y + (self.height/2),
+					r: self.width/2
+				},
+				hasOverlap = collision.circlesOverlap, 
 				registry = entity.registry, 
 				collidedAlready = {};
 				
@@ -118,9 +123,16 @@ define([
 						if(!ent || ent == self || collidedAlready[ent.id]) {
 							continue;
 						}
-						var boxArgs = [self.x, self.y, self.width, self.height,
-						ent.x, ent.y, ent.width, ent.height];
-						if(rectsOverlap.apply(null, boxArgs)){
+						// var boxArgs = [self.x, self.y, self.width, self.height,
+						// ent.x, ent.y, ent.width, ent.height];
+						var circleArgs = [
+							selfPoint, selfPoint.r,
+							{ 
+								x: ent.x + (ent.width/2),
+								y: ent.y + (ent.height/2),
+							}, Math.max(ent.width, ent.height)/2
+						];
+						if(hasOverlap.apply(null, circleArgs)){
 							ent.onHit && ent.onHit(self);
 							collidedAlready[ent] = true;
 						}
