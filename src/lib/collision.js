@@ -2,7 +2,7 @@ define([
 		'lib/lang',
 		'lib/Compose',
 		'lib/entity',
-		'lib/state',
+		'lib/state'
 	], function (lang, Compose, entity, Stateful){
 
 	var after = Compose.after, 
@@ -34,6 +34,12 @@ define([
 				console.log("Registering collidable entity "+entId+" in group: " + name);
 				group.members.push(entId);
 			}
+		},
+		circlesOverlap: function(p1, r1, p2, r2) {
+			var a = r1 + r2,
+				dx = p1.x - p2.x, 
+				dy = p1.y - p2.y;
+			return a * a > (dx * dx + dy * dy);
 		},
 		rectsOverlap: function(x0, y0, w0, h0, x2, y2, w2, h2) {
 			// x/y, width, height of rectangle 1
