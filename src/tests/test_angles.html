@@ -1,0 +1,57 @@
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="../css/tester.css"/>
+		<style>
+			#box {
+				border: 1px solid blue;
+			}
+		</style>
+		<script src="../lib/curl.js"></script>
+		<script>
+			// some <script data-main=""> semantics to reduce this boilerplate 
+			require = curl;
+			require({
+				baseUrl: '..',
+				paths: {
+					assets: '../assets'
+				}
+			}, [
+				'lib/lang',
+				'lib/compose'
+			], function(lang, Compose){
+				window.onload = function(){
+					var c = document.getElementById("box"), 
+						ctx = c.getContext("2d");
+					
+					console.log("context: ", ctx);
+					// ctx.strokeStyle = "red";
+					
+					for(var y=0; y<5; y++){
+						for(var x=0; x<5; x++){
+							var pt = { x: (x*50), y: (y*50) };
+							ctx.strokeStyle = 'rgb('+pt.x+','+ pt.y+','+',55)';
+
+							var rad = Math.atan2(pt.y - 100, pt.x - 100);
+							var propn = 8 * (Math.PI+rad) / (Math.PI+Math.PI);
+							ctx.fillText(
+								Math.round(propn),
+								Math.min(175, Math.max(1, pt.x-15)),
+								Math.min(190, Math.max(10, pt.y))
+							);
+							console.log(pt.x, pt.y);
+							console.log(rad, rad * 180 / Math.PI);
+							ctx.beginPath();
+							ctx.moveTo(100, 100);
+							ctx.lineTo(pt.x, pt.y);
+							// ctx.closePath();
+							ctx.stroke();
+						}
+					}
+				};
+			}); 
+		</script>
+	</head>
+	<body>
+		<canvas id="box" width="200" height="200"></canvas>
+	</body>
+</html>
