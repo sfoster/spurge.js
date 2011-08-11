@@ -13,7 +13,7 @@ define([
 	var exports = {};
 	console.log("defining TestThing");
 	
-	exports.TestThing = Compose(function(args){
+	exports.TestThing = Compose(ent.Actor, collision.Collidable, function(args){
 		if(args.bounds){
 			// each to his own boundaries
 			this.bounds = lang.createObject(args.bounds);
@@ -24,7 +24,7 @@ define([
 			y: Math.round(Math.random()) ? 1 : -1
 		};
 		// this.decayTime = (new Date()).getTime() + (10e3 * Math.random());
-	}, ent.Actor, collision.Collidable, 
+	},
 	{
 		type: "thing",
 		className: "thing",
@@ -51,7 +51,7 @@ define([
 			// 	this.destroy();
 			// }
 			if(this._firstUpdate){
-				console.log("_firstUpdate for thing: ", this.x, this.y);
+				// console.log("_firstUpdate for thing: ", this.x, this.y);
 				this._firstUpdate = false;
 			} else {
 				this.checkForCollisions(); 
@@ -81,9 +81,11 @@ define([
 				this.dirty("frameX");
 			}
 			this.dirty("y", "x");
-		})
-	});
+		}),
+		onHit: from(ent.Actor)
 
+	});
+  console.log("ent.Actor, has onHit: ", ent.Actor.prototype.onHit);
 	exports.MovingThing = Compose(ent.Actor, collision.Collidable, function(args){
 		// add target-seeking behaviour
 	}, {
@@ -189,7 +191,10 @@ define([
 			// stop if no target, i.e. don't update x,y
 			return this;
 		}),
-		onHit: from(ent.Actor)
+		onHit: function(){
+		  console.log(this.id + " onHit");
+		  // from(ent.Actor, "onHit")
+		}
 	});
 
 	exports.Barrier = Compose(function(args){
