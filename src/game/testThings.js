@@ -66,7 +66,7 @@ define([
 			;
 
 			// make a load of TestThings
-			for(var i=0; i<100; i++){
+			for(var i=0; i<20; i++){
 				thing = this._makeThing(bounds);
 				entities.push(thing);
 			}
@@ -94,6 +94,7 @@ define([
 				width: 32,
 				height: 32,
 				bounds: bounds,
+				scene: this,
 				frameY: 1,
 				x: Math.random() * (bounds.x - 32),
 				y: Math.random() * (bounds.y - 32),
