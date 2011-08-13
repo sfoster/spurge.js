@@ -68,7 +68,7 @@ define([
 			// make a load of TestThings
 			for(var i=0; i<20; i++){
 				thing = this._makeThing(bounds);
-				entities.push(thing);
+				entities.add(thing);
 			}
 			// hook up their events
 			// TODO: pass entity the scene so they can register their own events?

@@ -14,6 +14,7 @@ define([
 	console.log('defining playerScene');
 	var scene = Compose.create(function(){
 		console.log("testPlayer scene ctor");
+	  this.init();
 		console.log("controls: ", this.controls);
 		this.loop = new loop.Loop({
 			update: lang.bind(this, "update"),
@@ -77,7 +78,7 @@ define([
 			});
 			
 			for(var i=0; i<2; i++){
-				entities.push( 
+				entities.add( 
 					new npc.MovingThing({
 						id: "target_"+i,
 						scene: this,
@@ -133,7 +134,7 @@ define([
 			});
 			
 			window.you = you;
-			entities.push(you);
+			entities.add(you);
 			// hook up their events
 			// TODO: pass entity the scene so they can register their own events?
 			lang.forEach(entities, function(thing){

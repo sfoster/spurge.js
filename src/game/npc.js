@@ -85,7 +85,7 @@ define([
 		onHit: from(ent.Actor)
 
 	});
-  console.log("ent.Actor, has onHit: ", ent.Actor.prototype.onHit);
+
 	exports.MovingThing = Compose(ent.Actor, collision.Collidable, function(args){
 		// add target-seeking behaviour
 	}, {

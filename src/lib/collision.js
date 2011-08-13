@@ -63,6 +63,8 @@ define([
 	}, {
 		__groupsByName: {},
 		init: function(props){
+		  console.log("collision.Manager init");
+		  props = props || {};
 		  if(this.entityRegistry) {
 		    // 
 		  } else if(props.registry){

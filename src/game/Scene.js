@@ -17,14 +17,17 @@ define([
 		console.info("ENTER was pressed");
 	});
 	
-	return Compose(Scene, function(){
-		this.config = config;
-		this.entities = [];
-		this.controls = controls;
-		console.log("game/Scene ctor: " + this.id);
-	}, {
+	return Compose(Scene, {
+	  initCollisions: from(collision.Manager, "init"),
+	  init: after(Scene, function(){
+	    console.log("in game/Scene ctor, assigning config: ", config);
+  		this.config = config;
+  		this.controls = controls;
+  		console.log("game/Scene ctor: " + this.id);
+	  }),
 		registerCollisionGroup: from(collision.Manager, "registerGroup"),
 		getCollisionGroup: from(collision.Manager, "getGroup"), 
 		registerCollisionMember: from(collision.Manager, "registerMember")
-	}, collision.Manager);
+	});
+	// , collision.Manager
 });

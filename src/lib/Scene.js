@@ -15,11 +15,43 @@ define([
 		before = Compose.before, 
 		from = Compose.from;
 
-
-	return Compose(Compose, Evented, Stateful, Renderable, {
+	// Scene is a concrete class, we expect new Scene(args)
+	var Scene = Compose(
+		Compose, Evented, Stateful, Renderable, 
+		function(){
+			this.init();
+	},{
 		id: "",
 		type: "Scene",
 		entityRegistry: null,
+		
+		init: function(){
+			// this.setState("active") has same effect as this.start() (?)
+			console.log(this.id + ": in lib/Scene init");
+			
+			this.entityRegistry = {};
+			// define an 'add' method on our entity array
+			// to create an entry in the registry
+			this.entities = (function(reg){
+				var ar = [];
+				ar.add = function(ent){
+					if(!ent.id) {
+						throw new Error("Adding entity without an id");
+					}
+					reg[ent.id] = reg;
+				};
+				return ar;
+			})(this.entityRegistry);
+			
+			// set up dict for all behaviors registered with this scene
+			this.behaviors = {};
+			
+			this.registerState("active", {
+				enter: lang.bind(this, function(){
+					this.enter();
+				})
+			});
+		},
 		
 		enter: function(){
 			console.log(this.id + " Scene enter");
@@ -28,14 +60,13 @@ define([
 				this.prepare();
 			}
 
-			// pass the game node as the container for the scene's rendering
-			var gameNode = this.config.get("gameNode"); 
-
 			// don't re-render on re-entry
 			if(this.node){
 				this.node.style.zIndex = 10;
-			} else {
-				this.render(gameNode);
+			} else if(this.config) {
+				// pass the game node as the container for the scene's rendering
+				var gameNode = this.config.get("gameNode"); 
+				gameNode && this.render(gameNode);
 			}
 			return this;
 		},
@@ -72,25 +103,8 @@ define([
 		update: notimpl("update"),
 		redraw: notimpl("redraw"),
 		prepare: notimpl("prepare")
-	}, function(){
-		// this.setState("active") has same effect as this.start() (?)
-		console.log(this.id + ": in lib/Scene ctor");
-		this.registerState("active", {
-			enter: lang.bind(this, function(){
-				this.enter();
-			})
-		});
-		this.entityRegistry = {}
-		this.entities = (function(reg){
-		  var ar = [];
-		  ar.add = function(ent){
-		    if(!ent.id) {
-		      throw new Error("Adding entity without an id");
-		    }
-		    reg[ent.id] = reg;
-		  };
-		  return ar;
-		})(this.entityRegistry);
 	});
+	// export the Scene class
+	return Scene;
 
 });
