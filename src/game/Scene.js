@@ -16,10 +16,10 @@ define([
 		console.info("ENTER was pressed");
 	});
 	
-	return Compose(function(){
+	return Compose(Scene, function(){
 		this.config = config;
 		this.entities = [];
 		this.controls = controls;
 		console.log("game/Scene ctor: " + this.id);
-	}, Scene);
+	});
 });
