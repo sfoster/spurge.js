@@ -11,14 +11,15 @@ define([
 		before = Compose.before, 
 		from = Compose.from;
 
-	return Compose.create(function(){
+	console.log('defining playerScene');
+	var scene = Compose.create(function(){
 		console.log("testPlayer scene ctor");
 		console.log("controls: ", this.controls);
 		this.loop = new loop.Loop({
 			update: lang.bind(this, "update"),
 			redraw: lang.bind(this, "redraw")
 		});
-	}, Scene,
+	}, Scene, 
 	{
 		id: "testPlayer",
 		className: "scene scene-world",
@@ -54,6 +55,7 @@ define([
 		unload: from(Scene),
 		
 		prepare: function(){
+			console.log("preparing playerScene");
 			var config = this.config, 
 				bounds = {
 					x: config.get("mapWidth"), 
@@ -69,6 +71,10 @@ define([
 				imgSrc: lang.modulePath('lib/entity', '../assets/enemy1.png')
 			});
 			targetSprite.load();
+			
+			var wall = Compose.create(ent.Barrier, {
+				x: 0, y: 0, width: 5, height: bounds.y
+			});
 			
 			for(var i=0; i<2; i++){
 				entities.push( 
@@ -144,4 +150,5 @@ define([
 			this.prepared = true;
 		}
 	});
+	return scene;
 });

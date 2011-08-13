@@ -54,7 +54,7 @@ define([
 				// console.log("_firstUpdate for thing: ", this.x, this.y);
 				this._firstUpdate = false;
 			} else {
-				this.checkForCollisions(); 
+				this.checkForCollisions(this.scene); 
 			}
 			
 			var newY = y + velY; 
@@ -176,7 +176,7 @@ define([
 				// this.dirty("y", "x");
 				this._firstUpdate = false;
 			} else {
-				this.checkForCollisions(); 
+				this.checkForCollisions(this.scene); 
 			}
 
 			var target = this.target;

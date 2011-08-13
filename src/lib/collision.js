@@ -1,10 +1,8 @@
 define([
 		'lib/lang',
 		'lib/Compose',
-		'lib/entity',
 		'lib/state'
-	], function (lang, Compose, entity, Stateful){
-
+	], function (lang, Compose, Stateful){
 	var after = Compose.after, 
 		before = Compose.before, 
 		from = Compose.from;
@@ -17,24 +15,6 @@ define([
 
 	// collision is the module exports object
 	var collision = {
-		__groupsByName: {},
-		registerGroup: function(name, group){
-			this.__groupsByName[name] = group;
-			return this;
-		},
-		getGroup: function(name){
-			return this.__groupsByName[name];
-		}, 
-		registerMember: function(ent, name){
-			var group = this.__groupsByName[name], 
-				entId = ent.id || ent;
-			if(!group) {
-				throw new Exception("Cant register member "+entId+" of non-existent group:" + name);
-			} else {
-				console.log("Registering collidable entity "+entId+" in group: " + name);
-				group.members.push(entId);
-			}
-		},
 		circlesOverlap: function(p1, r1, p2, r2) {
 			var a = r1 + r2,
 				dx = p1.x - p2.x, 
@@ -53,10 +33,9 @@ define([
 		    if( y0 > (y2 + h2) || (y0 + h0) < y2) {
 				return false;
 			}
-		    return true
-		}
+		    return true;
+		}, 
 	};
-
 	collision.Group = Compose(function(){
 		this.members = [];
 		this.collidesWith = [];
@@ -67,20 +46,57 @@ define([
 		collidesWith: []
 	});
 
-	var actorsGroup = new collision.Group({
+	var actorsGroup = collision.actorsGroup = new collision.Group({
 		name: "Actors",
 		description: "All active (non-player?) entities (i.e. the do or can move)",
 		collidesWith: ["Actors"]
 	});
 
-	var blockerGroup = new collision.Group({
+	var blockerGroup = collision.blockerGroup = new collision.Group({
 		name: "Blockers",
 		description: "Passive, non-player entities like walls, obstacles",
 		collidesWith: ["Actors"]
 	});
 
-	collision.registerGroup(actorsGroup.name, actorsGroup);
-	collision.registerGroup(blockerGroup.name, blockerGroup);
+	collision.Manager = Compose(Compose, function(){
+	  // 
+	}, {
+		__groupsByName: {},
+		entityRegistry: null,
+		init: function(props){
+		  if(this.entityRegistry) {
+		    // 
+		  } else if(props.registry){
+  		  this.entityRegistry = props.registry;
+		  } else {
+		    throw new Error("collision must init with an entity registry object");
+		  }
+		  this._registerDefaultGroups();
+		  return this;
+		},
+		_registerDefaultGroups: function(){
+    	this.registerGroup(actorsGroup.name, actorsGroup);
+    	this.registerGroup(blockerGroup.name, blockerGroup);
+    	
+		},
+		registerGroup: function(name, group){
+			this.__groupsByName[name] = group;
+			return this;
+		},
+		getGroup: function(name){
+			return this.__groupsByName[name];
+		}, 
+		registerMember: function(ent, name){
+			var group = this.__groupsByName[name], 
+				entId = ent.id || ent;
+			if(!group) {
+				throw new Exception("Cant register member "+entId+" of non-existent group:" + name);
+			} else {
+				console.log("Registering collidable entity "+entId+" in group: " + name);
+				group.members.push(entId);
+			}
+		},
+	});
 
 	collision.Collidable = Compose({
 		// summary: 
@@ -95,18 +111,19 @@ define([
 		// membership of a collision group determines which kinds of objects we can/cant collide with
 		collisionGroup: '', 
 		
-		checkForCollisions: function(){
+		checkForCollisions: function(manager){
 			// get a list of all entities in my collision group I might collide with
+			// console.log("checkForCollisions got manager: ", manager);
 			var groupName = this.collisionGroup, 
-			 	group = groupName && collision.getGroup(this.collisionGroup), 
+			 	group = groupName && manager.getGroup(this.collisionGroup), 
 				self = this,
 				selfPoint = {
 					x: self.x + (self.width/2),
 					y: self.y + (self.height/2),
 					r: self.width/2
 				},
+				registry = manager.entityRegistry,
 				hasOverlap = collision.circlesOverlap, 
-				registry = entity.registry, 
 				collidedAlready = {};
 				
 			// console.log(this.id + " checkForCollisions in group: " + groupName);
@@ -114,11 +131,11 @@ define([
 			if(group) {
 				var entities = [];
 				lang.forEach(group.collidesWith, function(name){
-					var targGroup = collision.getGroup(name),
+					var targGroup = manager.getGroup(name),
 					 	members = targGroup.members,
 						ent = null;
 					for(var i=0,len=members.length; i<len; i++){
-						ent = registry[members[i]];
+						ent = [members[i]];
 						// skip entities we've already check in this loop (members of >1 groups?)
 						if(!ent || ent == self || collidedAlready[ent.id]) {
 							continue;
@@ -129,7 +146,7 @@ define([
 							selfPoint, selfPoint.r,
 							{ 
 								x: ent.x + (ent.width/2),
-								y: ent.y + (ent.height/2),
+								y: ent.y + (ent.height/2)
 							}, Math.max(ent.width, ent.height)/2
 						];
 						if(hasOverlap.apply(null, circleArgs)){
@@ -179,11 +196,8 @@ define([
 		}
 	}, function(){
 		console.log("Collidable constructor, collisionGroup", this.collisionGroup, this);
-		if(this.collisionGroup){
-			collision.registerMember(this, this.collisionGroup);
-		}
 	});
-
+  
 	// Players, Tiles, Doodads, Actors
 	// Swords, Enemies, Grass, Enemy Projectile, Enemy Blocker, 
 	// Collectables
