@@ -11,13 +11,13 @@ define([
 		before = Compose.before, 
 		from = Compose.from;
 
-	return Compose.create(function(){
+	return Compose.create(Scene, function(){
 		console.log("testThings scene ctor");
 		this.loop = new loop.Loop({
 			update: lang.bind(this, "update"),
 			redraw: lang.bind(this, "redraw")
 		});
-	}, Scene,
+	},
 	{
 		id: "testThings",
 		className: "scene scene-world",

@@ -12,15 +12,14 @@ define([
 		from = Compose.from;
 
 	console.log('defining playerScene');
-	var scene = Compose.create(function(){
+	var scene = Compose.create(Scene, function(){
 		console.log("testPlayer scene ctor");
-	  this.init();
 		console.log("controls: ", this.controls);
 		this.loop = new loop.Loop({
 			update: lang.bind(this, "update"),
 			redraw: lang.bind(this, "redraw")
 		});
-	}, Scene, 
+	}, 
 	{
 		id: "testPlayer",
 		className: "scene scene-world",

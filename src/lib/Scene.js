@@ -17,34 +17,15 @@ define([
 
 	// Scene is a concrete class, we expect new Scene(args)
 	var Scene = Compose(
-		Compose, Evented, Stateful, Renderable, 
-		function(){
-			this.init();
-	},{
-		id: "",
-		type: "Scene",
-		entityRegistry: null,
-		
-		init: function(){
-			// this.setState("active") has same effect as this.start() (?)
-			console.log(this.id + ": in lib/Scene init");
-			
-			this.entityRegistry = {};
-			// define an 'add' method on our entity array
-			// to create an entry in the registry
-			this.entities = (function(reg){
-				var ar = [];
-				ar.add = function(ent){
-					if(!ent.id) {
-						throw new Error("Adding entity without an id");
-					}
-					reg[ent.id] = reg;
-				};
-				return ar;
-			})(this.entityRegistry);
-			
+		Compose, Evented, Stateful, Renderable, function(){
 			// set up dict for all behaviors registered with this scene
 			this.behaviors = {};
+		},{
+		id: "",
+		type: "Scene",
+		
+		init: function(){
+			console.log(this.id + ": in lib/Scene init");
 			
 			this.registerState("active", {
 				enter: lang.bind(this, function(){
@@ -63,7 +44,7 @@ define([
 			// don't re-render on re-entry
 			if(this.node){
 				this.node.style.zIndex = 10;
-			} else if(this.config) {
+			} else {
 				// pass the game node as the container for the scene's rendering
 				var gameNode = this.config.get("gameNode"); 
 				gameNode && this.render(gameNode);
