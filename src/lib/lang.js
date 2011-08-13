@@ -126,6 +126,10 @@ define(['lib/compose'], function(Compose){
 						break;
 					}
 				}
+				if(!dirname) {
+					throw new Error("couldn't resolve path for module: " + mod);
+				}
+				console.log(mod + ": " + dirname);
 				pathCache[mod] = dirname;
 			}
 			// 
@@ -141,7 +145,7 @@ define(['lib/compose'], function(Compose){
 		};
 	})();
 	
-	console.log("lang module returning exports");
+	// console.log("lang module returning exports");
 	return	{
 		mixin: mixin,
 		uniqId: uniqId,
