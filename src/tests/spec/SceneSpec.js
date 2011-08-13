@@ -17,12 +17,8 @@ define(['lib/Scene'], function(Scene){
       expect(scene.enter).toHaveBeenCalled();
     });
 
-    it("should manage an entity registry", function() {
-      expect(scene.entityRegistry).toBeDefined()
-    });
-
-    it("should expose the entity registry to any of its components", function() {
-      expect(scene.entityRegistry).toBeDefined()
+    it("should know nothing of entity management", function() {
+      expect(scene.entityRegistry).toBeFalsy();
     });
 
     it("should manage scene-level behaviors", function() {

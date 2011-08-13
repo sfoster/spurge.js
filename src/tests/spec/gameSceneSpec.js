@@ -1,4 +1,4 @@
-define(['lib/Scene'], function(Scene){
+define(['game/Scene'], function(Scene){
 
   describe("game/Scene", function() {
     var scene;
@@ -22,7 +22,7 @@ define(['lib/Scene'], function(Scene){
     });
 
     it("should expose the entity registry to any of its components", function() {
-      expect(scene.entityRegistry).toBeDefined()
+      expect(scene.entityRegistry.add).toBeDefined();
     });
 
     it("should manage scene-level behaviors", function() {
