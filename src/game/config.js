@@ -2,7 +2,7 @@ define(["lib/lang"], function(lang){
 	console.log("game config");
 	var conf = {
 		REFRESH_RATE: 30,
-		assetsDir: lang.modulePath("lib/config", "../assets"),
+		assetsDir: lang.modulePath("lib/lang", "../assets"),
 		mapWidth: 640,
 		mapHeight: 480
 	};
