@@ -101,7 +101,7 @@
 						console.log("bounds: ", bounds);
 						
 						var crab = game.theCrab = this._makeThing(bounds, crabSprite);
-						entities.push( crab );
+						entities.add( crab );
 						
 						// TODO: pass entity the scene so they can register their own events?
 						// lang.forEach(entities, function(thing){
@@ -169,7 +169,7 @@
 						_firstUpdate: true
 					});
 					spot.render(scratchScene.node);
-					scratchScene.entities.push(spot);
+					scratchScene.entities.add(spot);
 				});
 				scratchScene.addEventListener("update", function(){
 					// console.log("scene update");
