@@ -197,16 +197,5 @@ define([
 		}
 	});
 
-	exports.Barrier = Compose(function(args){
-	}, ent.Actor, {
-		className: "sprite static-barrier",
-		width: 10,
-		height: 10,
-		
-		// a thing we can bump into
-	});
-	
-	
-	
 	return exports;
 });
