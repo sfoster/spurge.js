@@ -11,10 +11,26 @@ define(['lib/Scene'], function(Scene){
       expect(scene).toBeTruthy();
     });
 
-    it("entering active state should fire enter", function() {
+    it("should fire enter when entering the active state", function() {
       spyOn(scene, 'enter');
       scene.enterState('active');
       expect(scene.enter).toHaveBeenCalled();
+    });
+
+    it("should manage collision groups", function() {
+      expect(scene.registerCollisionGroup).toBeDefined()
+    });
+
+    it("should manage an entity registry", function() {
+      expect(scene.entityRegistry).toBeDefined()
+    });
+
+    it("should expose the entity registry to any of its components", function() {
+      expect(scene.entityRegistry).toBeDefined()
+    });
+
+    it("should manage scene-level behaviors", function() {
+      expect(scene.behaviors).toBeDefined()
     });
 
   });
