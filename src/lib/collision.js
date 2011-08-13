@@ -62,7 +62,6 @@ define([
 	  // 
 	}, {
 		__groupsByName: {},
-		entityRegistry: null,
 		init: function(props){
 		  if(this.entityRegistry) {
 		    // 

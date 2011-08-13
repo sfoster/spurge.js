@@ -12,8 +12,7 @@ define([
 		before = Compose.before, 
 		from = Compose.from;
 
-
-	return Compose(Compose, Evented, Stateful, function(args){
+	var Game = Compose(Compose, Evented, Stateful, function(args){
 		console.log('lib/Game ctor');
 		this.config = args.config || {};
 	},{
@@ -76,4 +75,6 @@ define([
 			console.log("tick: ", newPos);
 		}
 	});
+
+	return Game;
 });

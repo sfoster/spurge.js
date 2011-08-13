@@ -19,6 +19,7 @@ define([
 	return Compose(Compose, Evented, Stateful, Renderable, {
 		id: "",
 		type: "Scene",
+		entityRegistry: null,
 		
 		enter: function(){
 			console.log(this.id + " Scene enter");
@@ -79,8 +80,17 @@ define([
 				this.enter();
 			})
 		});
-		// 
-		this.entities = [];
+		this.entityRegistry = {}
+		this.entities = (function(reg){
+		  var ar = [];
+		  ar.add = function(ent){
+		    if(!ent.id) {
+		      throw new Error("Adding entity without an id");
+		    }
+		    reg[ent.id] = reg;
+		  };
+		  return ar;
+		})(this.entityRegistry);
 	});
 
 });
