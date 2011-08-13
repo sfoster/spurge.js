@@ -17,10 +17,6 @@ define(['lib/Scene'], function(Scene){
       expect(scene.enter).toHaveBeenCalled();
     });
 
-    it("should manage collision groups", function() {
-      expect(scene.registerCollisionGroup).toBeDefined()
-    });
-
     it("should manage an entity registry", function() {
       expect(scene.entityRegistry).toBeDefined()
     });
