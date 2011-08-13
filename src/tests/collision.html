@@ -28,6 +28,8 @@
 	<script src="../lib/curl.js"></script>
 	<script>
 		// some <script data-main=""> semantics to reduce this boilerplate?
+		require = curl;
+		console.log("requiring deps");
 		require({
 			baseUrl: '..',
 			paths: {
@@ -41,7 +43,7 @@
 			'game/testPlayer',
 			'game/config'
 		], function(lang, Compose, Stateful, Game, playerScene, config){
-
+			console.log("require callback");
 			// configure, config should be shared by the
 			// game, scenes and any other object that wants it
 			var gameNode = document.getElementById("playarea")
@@ -55,6 +57,7 @@
 				from = Compose.from;
 
 
+			console.log("Creating game");
 			var game = window.game = Compose.create(Stateful, {
 				id: "theGame",
 				config: config,
@@ -78,7 +81,9 @@
 					console.log("tick: ", newPos);
 				}
 			});
+			console.log("Calling setup");
 			game.setup(function(){
+				console.log("Calling start");
 				game.start();
 			});
 			
