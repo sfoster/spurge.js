@@ -1,16 +1,16 @@
 define([
 		'lib/lang',
 		'lib/Compose',
-		'lib/rendering'
-	], function (lang, Compose, Renderable){
-	
+		'lib/rendering',
+		'lib/collision'
+	], function (lang, Compose, Renderable, collision){
+
+	console.log("lib/entity module");
 	var after = Compose.after, 
 		before = Compose.before, 
 		from = Compose.from;
 
 	var exports = {};
-	
-	var registry = exports.registry = {};
 	
 	exports.Sprite = Compose(Compose, function(){
 		this.img = new Image();
@@ -40,7 +40,6 @@ define([
 		if(!this.id) {
 			this.id = "actor_"+(actorId++);
 		}
-		registry[this.id] = this;
 		// hook into scene events we're interested in
 		this.hookEvents();
 	}, Renderable, 
@@ -76,10 +75,6 @@ define([
 				hdl.remove();
 			}
 			this.unrender();
-
-			registry[this.id] = null;
-			delete registry[this.id];
-			
 		},
 		onHit: function(/*hitee*/ent){
 			// we respond differently if we get hit by a missile vs. bumping into a wall
@@ -190,6 +185,25 @@ define([
 	});
 	// add collisionGroup as a static property
 	exports.Actor.collisionGroup = exports.Actor.prototype.collisionGroup;
+
+	var barrierId = 0;
+	var Barrier = exports.Barrier = Compose(Compose, collision.Collidable, Renderable, function(){
+		this._dirty = { x: true, y: true };
+
+		// should have an id by now
+		// if not, invent one.
+		if(!this.id) {
+			this.id = "barrier_"+(barrierId++);
+		}
+		// hook into scene events we're interested in
+	}, {
+		type: "barrier",
+		className: "sprite static-barrier",
+		width: 10,
+		height: 10,
+		collisionGroup: "Blockers"
+	});
+	Barrier.collisionGroup = Barrier.prototype.collisionGroup;
 
 	return exports;
 });
