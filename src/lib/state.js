@@ -3,7 +3,6 @@ define([
 	'lib/compose'
 	], function(lang, Compose){
 		
-		console.log("state module");
 	Stateful = Compose(function(){
 			console.log(this.id + " Stateful ctor");
 			this.__statesByName = {}; 
@@ -86,5 +85,6 @@ define([
 			return state;
 		}
 	});
-	return Stateful;s
+  // console.log("state module");
+	return Stateful;
 });
