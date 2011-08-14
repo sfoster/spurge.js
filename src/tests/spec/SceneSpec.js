@@ -1,20 +1,17 @@
-define(['lib/Scene'], function(Scene){
+define(['lib/Scene', 'tests/sceneTestConfig'], function(Scene, config){
 
   describe("Scene", function() {
-    var scene;
+	var scene;
 
-    beforeEach(function() {
-      scene = new Scene();
-    });
+	beforeEach(function() {
+		scene = new Scene();
+		console.log("SceneSpec: assigning config to scene");
+		scene.config = config;
+		scene.init && scene.init();
+	});
 
     it("should instantiate ok", function() {
       expect(scene).toBeTruthy();
-    });
-
-    it("should fire enter when entering the active state", function() {
-      spyOn(scene, 'enter');
-      scene.enterState('active');
-      expect(scene.enter).toHaveBeenCalled();
     });
 
     it("should know nothing of entity management", function() {
@@ -24,6 +21,13 @@ define(['lib/Scene'], function(Scene){
     it("should manage scene-level behaviors", function() {
       expect(scene.behaviors).toBeDefined()
     });
+
+    it("should fire enter when entering the active state", function() {
+      spyOn(scene, 'enter');
+      scene.enterState('active');
+      expect(scene.enter).toHaveBeenCalled();
+    });
+
 
   });
   

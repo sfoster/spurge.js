@@ -19,18 +19,22 @@ define([
 	var Scene = Compose(
 		Compose, Evented, Stateful, Renderable, function(){
 			// set up dict for all behaviors registered with this scene
+			console.log("lib/Scene ctor");
 			this.behaviors = {};
+
+			// generate an id if non was provided
+			if(!this.id) {
+				this.id = "scene_"+(Scene._idCounter++);
+			}
 		},{
 		id: "",
 		type: "Scene",
 		
 		init: function(){
-			console.log(this.id + ": in lib/Scene init");
+			console.log(this.id + ": in lib/Scene init, config is: ", this.config);
 			
 			this.registerState("active", {
-				enter: lang.bind(this, function(){
-					this.enter();
-				})
+				enter: lang.bind(this, "enter")
 			});
 		},
 		
@@ -85,6 +89,7 @@ define([
 		redraw: notimpl("redraw"),
 		prepare: notimpl("prepare")
 	});
+	Scene._idCounter = 0;
 	// export the Scene class
 	return Scene;
 
