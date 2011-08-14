@@ -19,12 +19,12 @@ define([
 	});
 	
 	return Compose(Scene, entity.Manager, {
-	  initCollisions: from(collision.Manager, "init"),
-	  init: after(Scene, function(){
-	    console.log("in game/Scene ctor, assigning config: ", config);
-  		this.controls = controls;
-  		console.log("game/Scene ctor: " + this.id);
-	  }),
+		initCollisions: from(collision.Manager, "init"),
+		init: after(function(){
+			console.log("in game/Scene ctor, assigning config: ", config);
+			this.controls = controls;
+			console.log("game/Scene ctor: " + this.id);
+		}),
 		registerCollisionGroup: from(collision.Manager, "registerGroup"),
 		getCollisionGroup: from(collision.Manager, "getGroup"), 
 		registerCollisionMember: from(collision.Manager, "registerMember")
