@@ -2,7 +2,7 @@ define([
 	'lib/rosewood',
 	'lib/lang',
 	'lib/npc',
-	'lib/config'
+	'game/config'
 ], function (
 	rw,	// Rosewood module
 	lang,	// lang utilities

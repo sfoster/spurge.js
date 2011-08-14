@@ -3,7 +3,7 @@ define(["lib/lang", "lib/Compose"], function(lang, Compose){
 	// 	a Config class with some defaults
 	
 	return Compose(Compose, {
-		assetsDir: lang.modulePath("lib/config", "../assets"),
+		assetsDir: lang.modulePath("lib/Config", "../assets"),
 		mapWidth: 640,
 		mapHeight: 480,
 
