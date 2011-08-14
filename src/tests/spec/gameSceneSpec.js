@@ -1,10 +1,7 @@
-define(['game/Scene'], function(Scene){
+define(['game/Scene', 'tests/sceneTestConfig'], function(Scene, config){
 
 	describe("game/Scene", function() {
-		var scene, 
-			config = {
-				gameNode: {}
-			};
+		var scene;
 
 		beforeEach(function() {
 			scene = new Scene();
