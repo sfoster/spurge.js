@@ -1,26 +1,26 @@
-define(["lib/lang"], function(lang){
-	var conf = {
-		REFRESH_RATE: 30,
+define(["lib/lang", "lib/Compose"], function(lang, Compose){
+	// summary:
+	// 	a Config class with some defaults
+	
+	return Compose(Compose, {
 		assetsDir: lang.modulePath("lib/config", "../assets"),
 		mapWidth: 640,
-		mapHeight: 480
-	};
-	
-	return {
+		mapHeight: 480,
+
 		set: function(name, value){
 			if(arguments.length == 1 && typeof name=="object") {
-				lang.mixin(conf, name);
+				lang.mixin(this, name);
 			} else {
-				conf[name] = value;
+				this[name] = value;
 			}
-			return conf;
+			return this;
 		},
 		get: function(name){
 			if(name) {
-				return conf[name];
+				return this[name];
 			} else {
-				return conf;
+				return this;
 			}
 		}
-	};
+	});
 })
