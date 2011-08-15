@@ -13,14 +13,13 @@ define([
 	var exports = {};
 	
 	exports.Manager = Compose({
-		entityRegistry: null
+
 	}, function(){
 		// this.setState("active") has same effect as this.start() (?)
 		console.log(this.id + ": in entity/Manager ctor");
 		
 		var byId = this._entitiesById = {};
-		this.entities = new lang.IndexedArray();
-		
+		this.entities = new lang.KeyedArray();
 	});
 	
 	exports.Sprite = Compose(Compose, function(){
