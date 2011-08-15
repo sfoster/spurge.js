@@ -12,25 +12,14 @@ define([
 
 	var exports = {};
 	
-	exports.EntityManager = Compose({
+	exports.Manager = Compose({
 		entityRegistry: null
 	}, function(){
 		// this.setState("active") has same effect as this.start() (?)
-		console.log(this.id + ": in entity/EntityManager ctor");
+		console.log(this.id + ": in entity/Manager ctor");
 		
-		this.entityRegistry = {};
-		// define an 'add' method on our entity array
-		// to create an entry in the registry
-		this.entities = (function(reg){
-			var ar = [];
-			ar.add = function(ent){
-				if(!ent.id) {
-					throw new Error("Adding entity without an id");
-				}
-				reg[ent.id] = reg;
-			};
-			return ar;
-		})(this.entityRegistry);
+		var byId = this._entitiesById = {};
+		this.entities = new lang.IndexedArray();
 		
 	});
 	
