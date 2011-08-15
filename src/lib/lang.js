@@ -1,6 +1,10 @@
 define(['lib/compose'], function(Compose){
 	console.log("lang module");
 	
+	var after = Compose.after, 
+		before = Compose.before, 
+		from = Compose.from;
+
 	var _empty = {}, 
 		reTmpl = /\$\{(\w+)(([\/\|\*\+\-])(\w+))?\}/g, 
 		undef = (function(){ return; })(), 
@@ -145,6 +149,59 @@ define(['lib/compose'], function(Compose){
 		};
 	})();
 	
+	// Augmented Array which maintains a by-id lookup
+	// TODO: maybe this should just be something like dojo.Store?
+	var KeyedArray = Compose(Array, {
+		push: before(function(){
+			forEach(arguments, function(entry){
+				this._byId[entry.id] = entry;
+			}, this);
+		}),
+		unshift: before(function(){
+			forEach(arguments, function(entry){
+				this._byId[entry.id] = entry;
+			}, this);
+		}),
+		pop: before(function(){
+			var entry = this[this.length-1];
+			entry && (delete this._byId[entry.id]);
+		}),
+		shift: before(function(){
+			var entry = this[0];
+			entry && (delete this._byId[entry.id]);
+		}),
+		add: function(entry){
+			return this.push(entry);
+		},
+		remove: function(entry){
+			var idx = this.indexOf(entry);
+			if(idx > -1) {
+				this.splice(idx, 1);
+				delete this._byId[entry.id];
+			}
+		},
+		byId: function(id) {
+			return this._byId[id];
+		}, 
+		concat: function(ar) {
+			var newAr = this.slice();
+			// add our byId dict. 
+			var byId = newAr._byId = mixin({}, this._byId);
+			// add in ids for the array we concated on
+			forEach(ar, function(entry){
+				newAr.push(entry);
+				byId[entry.id] = entry;
+			}, this);
+			return newAr;
+		}
+	}, function(){
+		this._byId = {};
+		if(arguments.length){
+			this.push.apply(this, arguments);
+		}
+		return this;
+	});
+	
 	// console.log("lang module returning exports");
 	return	{
 		mixin: mixin,
@@ -158,6 +215,7 @@ define(['lib/compose'], function(Compose){
 		modulePath: modulePath,
 		// ensure Compose's this is the default/undefined 'this' else it goes wobbly
 		Compose: mixin(bind(undefinedThis, Compose), Compose),
+		KeyedArray: KeyedArray,
 		_empty: _empty
 	};
 	
