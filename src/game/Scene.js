@@ -18,7 +18,7 @@ define([
 		console.info("ENTER was pressed");
 	});
 	
-	return Compose(Scene, entity.Manager, {
+	return Compose(Scene, collision.Manager, entity.Manager, {
 		initCollisions: from(collision.Manager, "init"),
 		init: after(function(){
 			console.log("in game/Scene ctor, assigning config: ", config);

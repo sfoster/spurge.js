@@ -2,10 +2,22 @@ define(['game/Scene', 'tests/sceneTestConfig'], function(Scene, config){
 
 	describe("game/Scene", function() {
 		var scene;
-
 		beforeEach(function() {
 			scene = new Scene();
 			console.log("game/Scene spec beforeEach, scene instance created");
+		});
+
+		it("should instantiate ok", function() {
+			expect(scene).toBeTruthy();
+		});
+
+	});
+	describe("game/Scene+init", function() {
+		var scene;
+
+		beforeEach(function() {
+			scene = new Scene();
+			console.log("game/Scene+init spec beforeEach, scene instance created");
 			scene.config = config;
 			if(scene.init){
 				scene.init();
@@ -13,16 +25,12 @@ define(['game/Scene', 'tests/sceneTestConfig'], function(Scene, config){
 			}
 		});
 
-		it("should instantiate ok", function() {
-			expect(scene).toBeTruthy();
-		});
-
-		it("should manage an entity registry", function() {
-			expect(scene.entityRegistry).toBeDefined()
+		it("should manage an entity by-id lookup", function() {
+			expect(scene.entities).toBeDefined()
 		});
 
 		it("should expose the entity registry to any of its components", function() {
-			expect(scene.entityRegistry.add).toBeDefined();
+			expect(scene.entities.add).toBeDefined();
 		});
 
 		it("should manage scene-level behaviors", function() {
