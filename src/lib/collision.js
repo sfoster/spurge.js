@@ -63,22 +63,14 @@ define([
 	}, {
 		__groupsByName: {},
 		init: function(props){
-		  console.log("collision.Manager init");
-		  props = props || {};
-		  if(this.entityRegistry) {
-		    // 
-		  } else if(props.registry){
-  		  this.entityRegistry = props.registry;
-		  } else {
-		    throw new Error("collision must init with an entity registry object");
-		  }
-		  this._registerDefaultGroups();
-		  return this;
+			console.log("collision.Manager init");
+
+			this._registerDefaultGroups();
+			return this;
 		},
 		_registerDefaultGroups: function(){
-    	this.registerGroup(actorsGroup.name, actorsGroup);
-    	this.registerGroup(blockerGroup.name, blockerGroup);
-    	
+			this.registerGroup(actorsGroup.name, actorsGroup);
+			this.registerGroup(blockerGroup.name, blockerGroup);
 		},
 		registerGroup: function(name, group){
 			this.__groupsByName[name] = group;
@@ -123,7 +115,6 @@ define([
 					y: self.y + (self.height/2),
 					r: self.width/2
 				},
-				registry = manager.entityRegistry,
 				hasOverlap = collision.circlesOverlap, 
 				collidedAlready = {};
 				
