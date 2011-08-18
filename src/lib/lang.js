@@ -78,6 +78,13 @@ define(['lib/compose'], function(Compose){
 		return obj;
 	};
 
+	var isArray = function(thing){
+		return (
+			typeof thing == "object"
+			&& thing.constructor == Array
+		);
+	};
+	
 	var hasProp = Object.prototype.hasOwnProperty;
 
 	var templatize = function(tmpl, data) {
@@ -211,6 +218,7 @@ define(['lib/compose'], function(Compose){
 		keys: keys,
 		forEach: forEach,
 		forIn: forIn,
+		isArray: isArray,
 		templatize: templatize,
 		modulePath: modulePath,
 		// ensure Compose's this is the default/undefined 'this' else it goes wobbly
