@@ -3,11 +3,7 @@ define([
 	'lib/compose'
 	], function(lang, Compose){
 		
-	Stateful = Compose(function(){
-			console.log(this.id + " Stateful ctor");
-			this.__statesByName = {}; 
-			this.__statesByType = {};
-		},{
+	Stateful = Compose({
 		// a thing which manages some states
 		__statesByName: null, 
 		__statesByType: null,
@@ -45,7 +41,7 @@ define([
 			var state = lang.createObject({
 				active: false,
 				type: name, // default to name==type
-				name: name,
+				name: name
 			}, props || {});
 			
 			var	name = state.name, 
@@ -83,7 +79,11 @@ define([
 
 			// return a state object decorated with destructor to undo the registration we just did
 			return state;
-		}
+		},
+	}, function(){
+		console.log(this.id + " Stateful ctor");
+		this.__statesByName = {}; 
+		this.__statesByType = {};
 	});
   // console.log("state module");
 	return Stateful;
