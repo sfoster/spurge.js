@@ -1,0 +1,130 @@
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="../css/tester.css"/>
+		<script src="../lib/curl.js"></script>
+		<script>
+			// some <script data-main=""> semantics to reduce this boilerplate?
+			require = curl;
+			require({
+				baseUrl: '..',
+				paths: {
+					assets: '../assets'
+				}
+			}, [
+				'lib/lang',
+				'lib/compose',
+				'lib/promise',
+				'lib/state',
+				'lib/Evented',
+				'lib/loop'
+			], function(lang, Compose, Promise, Stateful, Evented, loop){
+				var _Node = Compose(Compose, {
+					
+				}, function(){
+					this.children = new lang.KeyedArray;
+				});
+				
+				var game = graph = Compose.create(_Node, function(){
+					console.log("game ctor");
+					var defaultSequence = [
+						"init", 
+						"loadContent", 
+						"run"
+					];
+					var self = this;
+
+					this.start = function(){
+						this.sequence = new Promise.Sequence(
+							defaultSequence.map(function(name){
+								return lang.bind(self, name)
+							})
+						);
+						this.sequence.next();
+					};
+				}, {
+					init: function(){
+						this.clock = new loop.Loop({
+							id: "clock",
+							update: lang.bind(this, this.update),
+							redraw: lang.bind(this, this.render),
+						});
+						
+						this.stageNode = document.getElementById("playarea");
+						this.timeNode = document.getElementById("timestamp");
+						
+						this.renderQueue = [];
+					},
+					loadContent: function(){
+						console.log("loading assets");
+					},
+					run: function(){
+						console.log("start clock if we have one");
+						console.log("kick off the update cycle");
+						this.clock.startLoop();
+					},
+					update: function(){
+						this.renderQueue = [];
+						this.timestamp = +new Date;
+						// walk the graph
+						this._walkCollection(this.children)
+					},
+					_walkCollection: function(children){
+						var renderQ = this.renderQueue, 
+							node = null;
+						for(var i=0, len=children.length; i<len; i++){
+							node = children[i];
+							// recurse on node's children
+							// bottom up - update children then parents
+							if(node.children && node.children.length){
+								this._walkCollection(node.children);
+							}
+							if("function" == typeof node.update){
+								node.update();
+							}
+							if("render" == typeof node.render){
+								renderQ.push(node);
+							}
+						}
+					},
+					render: function(){
+						var renderQ = this.renderQueue, 
+							ent = null;
+						while((ent = renderQ.pop())){
+							ent.render();
+						};
+						this.timeNode.innerHTML = this.timestamp;
+					},
+					shutdown: function(){
+						this.clock.stopLoop();
+					}
+				});
+				
+				game.children.push(
+					{ id: "physics" }
+				);
+				game.children.push(
+					{ id: "path-finding" }
+				);
+				game.children.push(
+					{ 
+						id: "creep"
+					}
+				);
+				
+				game.start();
+			}); 
+		</script>
+	</head>
+	<body style="margin:0;padding:0;">
+		<div id="playarea" style="height: 200px; margin-right:10px;">
+			<div id="timestamp"></div>
+		</div>
+		<input type="button" value="player bit" onclick="game.enterState('testPlayer');">
+		&nbsp;
+		<input type="button" value="start" onclick="game.enterState('testThings');">
+		&nbsp;
+		<input type="button" value="stop" onclick="game.enterState('ended');">
+		&nbsp;
+		<input type="button" value="menu mode" onclick="game.enterState('menu');">
+	</body>
+</html>
