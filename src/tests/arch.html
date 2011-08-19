@@ -155,8 +155,8 @@
 					}),
 					render: function(){
 						this.domNode.style.left = this.x +"px";
-						this.domNode.style.top = this.y +"px";
-						console.log("Creep render: ", this.x, this.y, this.domNode.style.cssText);
+						this.domNode.style.top = (90+this.y) +"px";
+						// console.log("Creep render: ", this.x, this.y, this.domNode.style.cssText);
 					}
 				}, function(){
 					console.log("creep ctor");
@@ -164,11 +164,16 @@
 				});
 				
 				var sineWave = Compose.create(_Node, {
+					y: 0,
+					x: 0,
 					type: "sine-wave",
 					update: function(){
-						var ms = (new Date).getMilliseconds();
-						this._parent.x = ms / 10;
-						this._parent.y = 50 + (10 * Math.sin(ms / Math.PI * 10));
+						var y = this.y,
+							x = this.x;
+						this._parent.x = x;
+						this._parent.y = 50 * Math.sin(y);
+						this.y = y >= 100 ? 0 : y+0.1;
+						this.x = x >= 800 ? 0 : x+4;
 						// console.log("sineWave: ", this._parent.x, this._parent.y);
 					}
 				})
@@ -176,7 +181,7 @@
 				game.start();
 				setTimeout(function(){
 					game.shutdown()
-				}, 2000);
+				}, 12000);
 			}); 
 		</script>
 	</head>
