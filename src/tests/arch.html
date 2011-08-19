@@ -1,6 +1,14 @@
 <html>
 	<head>
 		<link rel="stylesheet" type="text/css" href="../css/tester.css"/>
+		<style>
+		.point {
+			position: absolute;
+			top: 0;
+			left: 0;
+			z-index: 20;
+		}
+		</style>
 		<script src="../lib/curl.js"></script>
 		<script>
 			// some <script data-main=""> semantics to reduce this boilerplate?
@@ -18,13 +26,34 @@
 				'lib/Evented',
 				'lib/loop'
 			], function(lang, Compose, Promise, Stateful, Evented, loop){
+
+				var after = Compose.after, 
+					before = Compose.before, 
+					from = Compose.from;
+
 				var _Node = Compose(Compose, {
-					
+					addChild: function(thing){
+						thing.init && thing.init(this);
+						this.children.push(thing);
+						return this;
+					},
+					removeChild: function(thing){
+						thing.uninit && thing.uninit();
+						this.children.remove(thing);
+						return thing;
+					},
+					getParent: function(){
+						return this._parent;
+					}, 
+					init: function(parent){
+						this._parent = parent;
+						return this;
+					}
 				}, function(){
 					this.children = new lang.KeyedArray;
 				});
 				
-				var game = graph = Compose.create(_Node, function(){
+				var world = game = Compose.create(_Node, function(){
 					console.log("game ctor");
 					var defaultSequence = [
 						"init", 
@@ -42,7 +71,7 @@
 						this.sequence.next();
 					};
 				}, {
-					init: function(){
+					init: after(function(parent){
 						this.clock = new loop.Loop({
 							id: "clock",
 							update: lang.bind(this, this.update),
@@ -53,7 +82,20 @@
 						this.timeNode = document.getElementById("timestamp");
 						
 						this.renderQueue = [];
-					},
+
+						this.addChild(
+							{ id: "physics" }
+						);
+						this.addChild(
+							{ id: "path-finding" }
+						);
+
+						console.log("adding creep");
+						game.addChild((new Creep));
+						console.log("/adding creep");
+
+						
+					}),
 					loadContent: function(){
 						console.log("loading assets");
 					},
@@ -81,7 +123,7 @@
 							if("function" == typeof node.update){
 								node.update();
 							}
-							if("render" == typeof node.render){
+							if("function" == typeof node.render){
 								renderQ.push(node);
 							}
 						}
@@ -99,19 +141,42 @@
 					}
 				});
 				
-				game.children.push(
-					{ id: "physics" }
-				);
-				game.children.push(
-					{ id: "path-finding" }
-				);
-				game.children.push(
-					{ 
-						id: "creep"
+				var Creep = Compose(_Node, {
+					x: 0, 
+					y: 0,
+					type: "creep",
+					init: after(function(){
+						console.log("Creep init");
+						var node = this.domNode = document.createElement("div");
+						node.className = "static-spot point";
+						game.stageNode.appendChild(node);
+						
+						this.addChild(sineWave);
+					}),
+					render: function(){
+						this.domNode.style.left = this.x +"px";
+						this.domNode.style.top = this.y +"px";
+						console.log("Creep render: ", this.x, this.y, this.domNode.style.cssText);
 					}
-				);
+				}, function(){
+					console.log("creep ctor");
+					this.children = [];
+				});
 				
+				var sineWave = Compose.create(_Node, {
+					type: "sine-wave",
+					update: function(){
+						var ms = (new Date).getMilliseconds();
+						this._parent.x = ms / 10;
+						this._parent.y = 50 + (10 * Math.sin(ms / Math.PI * 10));
+						// console.log("sineWave: ", this._parent.x, this._parent.y);
+					}
+				})
+
 				game.start();
+				setTimeout(function(){
+					game.shutdown()
+				}, 2000);
 			}); 
 		</script>
 	</head>
@@ -119,11 +184,9 @@
 		<div id="playarea" style="height: 200px; margin-right:10px;">
 			<div id="timestamp"></div>
 		</div>
-		<input type="button" value="player bit" onclick="game.enterState('testPlayer');">
+		<input type="button" value="start" onclick="game.start();">
 		&nbsp;
-		<input type="button" value="start" onclick="game.enterState('testThings');">
-		&nbsp;
-		<input type="button" value="stop" onclick="game.enterState('ended');">
+		<input type="button" value="stop" onclick="game.shutdown('ended');">
 		&nbsp;
 		<input type="button" value="menu mode" onclick="game.enterState('menu');">
 	</body>
