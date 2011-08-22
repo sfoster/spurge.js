@@ -3,8 +3,8 @@ define([
 		'lib/compose',
 		'lib/Evented',
 		'lib/state',
-		'lib/Scene'
-	], function (lang, Compose, Evented, Stateful){
+		'lib/promise'
+	], function (lang, Compose, Evented, Stateful, Promise){
 
 	var engine; // need one
 
@@ -19,7 +19,7 @@ define([
 		config: null,
 		sprites: null,
 		scenes: null,
-		setup: function(callback){
+		init: function(callback){
 			// console.log("setup sprites: ", sprites);
 			var game = this;
 			this.scenes.forEach(function(scene){
@@ -27,52 +27,44 @@ define([
 				this.registerState(scene.id, scene);
 				scene.game = game; 
 				console.log("assigning config to scene " + scene.id, game.config);
-				scene.config = game.config; 
+				if(!scene.config) {
+					game.config; 
+				}
 			}, this);
-			if(callback){
-				setTimeout(callback, 1);
-			}
 		},
-		postLoad: function() {
-			this.onReady && this.onReady();
+		load: function() {
+			// load content resources
+			// return a promise as necessary
 		},
-		_setupMap: function(){
-			// need a node/context to render to
-			// need dimensions
-			// need a set of sprites
-			// need map data
-		},
-		_setupPlayer: function(){
-			this.player = {
-				health: 100,
-				credits: 100
-			};
-			// render via aop?
-		},
-		_setupMenu: function(){
-			// need a node/context to render to
-			// need a filtered list of towers to place
-			// need avail. credits
-			// need map data
-			this.player = {
-				health: 100,
-				credits: 100
-			};
-			var shopNode = $("#shopMenu"); 
-			var tmpl = '<div class="content">${content}</div>', 
-				div = $(lang.templatize(tmpl, { content: '<h3>Menu goes here</h3>'}));
-			shopNode.append(div);
-			console.log("TODO: setupMenu");
-		}, 
-		start: function() {
+		run: function(){
+			// start the loop, or load the thing that owns the loop
 			if(!this.currentScene){
 				this.currentScene = this.scenes[0].id;
+				Promise.when(this.currentScene.init(), lang.bind(this, function(){
+					this.enterState(this.currentScene);
+				}));
 			}
-			this.enterState(this.currentScene);
 		},
-		tick: function() {
+		enter: function() {
+			var sequence = ["init", "loadContent", "postLoadContent", "run"];
+			sequence.next = function(){
+				var meth = sequence.shift();
+				if(meth) {
+					console.log("calling sequence method: " +meth);
+					Promise.when(
+						meth.call(scope), 
+						lang.bind(this, "next")
+					);
+				}
+			};
+			sequence.next();
+		},
+		update: function() {
 			//Offset all the pane:
-			console.log("tick: ", newPos);
+			// console.log("tick");
+		}, 
+		exit: function(){
+			
 		}
 	});
 

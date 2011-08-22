@@ -8,7 +8,7 @@ define([
 		before = Compose.before, 
 		from = Compose.from;
 
-	return Compose.create(function(){
+	return Compose(function(){
 		console.log("menu scene ctor");
 	},Scene, 
 	{

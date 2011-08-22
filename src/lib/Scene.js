@@ -30,7 +30,10 @@ define([
 		id: "",
 		type: "Scene",
 		
-		init: function(){
+		init: function(config){
+			if(config) {
+				this.config = config;
+			}
 			console.log(this.id + ": in lib/Scene init, config is: ", this.config);
 			
 			this.registerState("active", {

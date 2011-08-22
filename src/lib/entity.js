@@ -18,7 +18,6 @@ define([
 		// this.setState("active") has same effect as this.start() (?)
 		console.log(this.id + ": in entity/Manager ctor");
 		
-		var byId = this._entitiesById = {};
 		this.entities = new lang.KeyedArray();
 	});
 	
