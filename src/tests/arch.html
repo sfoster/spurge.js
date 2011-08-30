@@ -32,14 +32,16 @@
 					from = Compose.from;
 
 				var _Node = Compose(Compose, {
-					addChild: function(thing){
+					// basic Component interface
+					familyName: "thing",
+					addComponent: function(thing){
 						thing.init && thing.init(this);
-						this.children.push(thing);
+						this.components.push(thing);
 						return this;
 					},
 					removeChild: function(thing){
 						thing.uninit && thing.uninit();
-						this.children.remove(thing);
+						this.components.remove(thing);
 						return thing;
 					},
 					getParent: function(){
@@ -50,15 +52,16 @@
 						return this;
 					}
 				}, function(){
-					this.children = new lang.KeyedArray;
+					this.components = new lang.KeyedArray;
 				});
 				
 				var world = game = Compose.create(_Node, function(){
+					familyName: "universe",
 					console.log("game ctor");
 					var defaultSequence = [
 						"init", 
 						"loadContent", 
-						"run"
+						"activate"
 					];
 					var self = this;
 
@@ -73,6 +76,7 @@
 				}, {
 					init: after(function(parent){
 						this.clock = new loop.Loop({
+							familyName: "universe",
 							id: "clock",
 							update: lang.bind(this, this.update),
 							redraw: lang.bind(this, this.render),
@@ -83,15 +87,15 @@
 						
 						this.renderQueue = [];
 
-						this.addChild(
+						this.addComponent(
 							{ id: "physics" }
 						);
-						this.addChild(
+						this.addComponent(
 							{ id: "path-finding" }
 						);
 
 						console.log("adding creep");
-						game.addChild((new Creep));
+						game.addComponent((new Creep));
 						console.log("/adding creep");
 
 						
@@ -99,7 +103,7 @@
 					loadContent: function(){
 						console.log("loading assets");
 					},
-					run: function(){
+					activate: function(){
 						console.log("start clock if we have one");
 						console.log("kick off the update cycle");
 						this.clock.startLoop();
@@ -108,17 +112,17 @@
 						this.renderQueue = [];
 						this.timestamp = +new Date;
 						// walk the graph
-						this._walkCollection(this.children)
+						this._walkCollection(this.components)
 					},
-					_walkCollection: function(children){
+					_walkCollection: function(components){
 						var renderQ = this.renderQueue, 
 							node = null;
-						for(var i=0, len=children.length; i<len; i++){
-							node = children[i];
-							// recurse on node's children
-							// bottom up - update children then parents
-							if(node.children && node.children.length){
-								this._walkCollection(node.children);
+						for(var i=0, len=components.length; i<len; i++){
+							node = components[i];
+							// recurse on node's components
+							// bottom up - update components then parents
+							if(node.components && node.components.length){
+								this._walkCollection(node.components);
 							}
 							if("function" == typeof node.update){
 								node.update();
@@ -151,7 +155,8 @@
 						node.className = "static-spot point";
 						game.stageNode.appendChild(node);
 						
-						this.addChild(sineWave);
+						// add a behavior
+						this.addComponent(sineWave);
 					}),
 					render: function(){
 						this.domNode.style.left = this.x +"px";
@@ -160,8 +165,16 @@
 					}
 				}, function(){
 					console.log("creep ctor");
-					this.children = [];
+					this.components = new lang.KeyedArray;
 				});
+				var Creeplet = Compose(Creep, {
+					init: function(){
+						console.log("Creep init");
+						var node = this.domNode = document.createElement("div");
+						node.className = "static-spot point";
+						game.stageNode.appendChild(node);
+					},
+				})
 				
 				var sineWave = Compose.create(_Node, {
 					y: 0,
