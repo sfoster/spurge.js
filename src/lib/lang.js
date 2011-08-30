@@ -157,25 +157,31 @@ define(['lib/compose'], function(Compose){
 	})();
 	
 	// Augmented Array which maintains a by-id lookup
-	// TODO: maybe this should just be something like dojo.Store?
+	
 	var KeyedArray = Compose(Array, {
+		_register: function(entry){
+			this._byId[entry.id] = entry;
+		}, 
+		_unregister: function(entry, idx, coln){
+			delete this._byId[entry.id];
+		}, 
 		push: before(function(){
 			forEach(arguments, function(entry){
-				this._byId[entry.id] = entry;
+				this._register(entry);
 			}, this);
 		}),
 		unshift: before(function(){
 			forEach(arguments, function(entry){
-				this._byId[entry.id] = entry;
+				this._register(entry);
 			}, this);
 		}),
 		pop: before(function(){
 			var entry = this[this.length-1];
-			entry && (delete this._byId[entry.id]);
+			entry && this._unregister(entry);
 		}),
 		shift: before(function(){
 			var entry = this[0];
-			entry && (delete this._byId[entry.id]);
+			entry && this._unregister(entry);
 		}),
 		add: function(entry){
 			return this.push(entry);
@@ -184,7 +190,7 @@ define(['lib/compose'], function(Compose){
 			var idx = this.indexOf(entry);
 			if(idx > -1) {
 				this.splice(idx, 1);
-				delete this._byId[entry.id];
+				this._unregister(entry);
 			}
 		},
 		byId: function(id) {
