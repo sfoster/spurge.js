@@ -1,7 +1,46 @@
 define(['lib/lang', 'lib/compose'], function(lang, Compose){
-	var KeyedArray
 
-	var Graph = Compose(function(){
+	var Graph = Compose({
+		// more Graph methods/properties
+		
+		// _nextId: auto-incrementing id for components
+		_nextId: 0, 
+		generateId: function(stem){
+			stem = stem || "component";
+			return stem+"_"+(this.nextId++);
+		}, 
+		attachMap: {}, 
+		unattach: function(c) {
+			// remove a component from the graph
+			// think pnode.removeChild()
+
+			// thing1 attaching behaviorA produces
+			// 	thing1.childComponents[behaviorA]
+			// and
+			// 	graph.attachMap.behaviorA.thing1
+			
+			var attachPoints = this.componentAttachList(c);
+			// remove from each
+			attachPoints.forEach(function(parent){
+				parent.remove(c);
+			}, this);
+		},
+		
+		componentAttachList: function(c){
+			// get a list of everything this component is attached to
+			var id = typeof c == "string" ? c : c.id, 
+				attachMap = this.attachMap[id], 
+				attachIds = lang.keys(attachMap) || []; 
+			
+			var list = attachIds.map( 
+				lang.bind(this.registry, "byId") 
+			);
+			return list;
+		}
+	}, function(){
+		// unshare immutable prototype properties
+		this.attachMap = {};
+
 		// registry: flat array + lookup for all components
 		this.registry = Compose.create(lang.KeyedArray, {
 			byType: function(type){
@@ -13,7 +52,7 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 					
 				for(var i=0,len=this.length; i<len; i++) {
 					component = this[i];
-					if("type" in component && component.type == type) {
+					if(("type" in component) && component.type == type) {
 						coln.push(component);
 					}
 				}
@@ -21,40 +60,53 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 				return coln;
 			}
 		}); // global lookup for all nodes in the graph
+		
+		
+		// use a closure to define a ComponentCollection class 
+		// that's hard-linked to this graph 
+		var graph = this; 
+		var ComponentCollection = this.ComponentCollection = Compose(Compose, lang.KeyedArray, {
+			_register: Compose.before(function(c){
+				// hook the '_register' method of KeyedArray
+				// to make an entry for this item in the graph-wide registry
 
-		this.attachMap = {};
-
-		var graph = this, 
-			ComponentCollection = this.ComponentCollection = Compose(Compose, lang.KeyedArray, {
-				_register: Compose.before(function(c){
-					if(!c.id) throw new Error("Cant register component without id: " + c);
-					// a component is being attached
-					if(!graph.registry.byId(c.id)){
-						// make sure its in our graph-wide registry also
-						graph.registry.add(c);
-					}
-					var attachTo = graph.attachMap[c.id] || (graph.attachMap[c.id] = {});
-					// track a link between the attachee and attached
-					attachTo[this.componentId] = c.id;
-				}),
-				_unregister: Compose.before(function(c){
-					// a component is being detached
-					// break link between the attachee and attached
-					var attachTo = graph.attachMap[c.id] || (graph.attachMap[c.id] = {});
-					delete attachTo[componentId];
-				}) 
-			});
+				// thing1 attaching behaviorA produces
+				// 	thing1.childComponents[behaviorA]
+				// and
+				// 	graph.attachMap.behaviorA.thing1
+				
+				if(!c.id) throw new Error("Cant register component without id: " + c);
+				// a component is being attached
+				if(!graph.registry.byId(c.id)){
+					// make sure its in our graph-wide registry also
+					graph.registry.add(c);
+				}
+				// each component gets its own attach hash
+				var attachTo = graph.attachMap[c.id] || (graph.attachMap[c.id] = {});
+				// track a link between the attachee (the component this collection belongs to) 
+				// ..and the attached
+				attachTo[this.componentId] = c.id;
+			}),
+			_unregister: Compose.before(function(c){
+				// a component is being detached
+				// break link between the attachee and attached
+				var attachTo = graph.attachMap[c.id] || (graph.attachMap[c.id] = {});
+				delete attachTo[componentId];
+			}) 
+		});
 			
 		// define a Component class that's hard-linked to this graph 
 		this.Component = Compose(Compose, function(){
-			// generate an id if non was provided
+			// generate an id if none was provided
 			if(!this.id) {
 				this.id = graph.generateId();
 			}
 
 			// childComponents is verbose but unambiguous 
 			// and less liable to be confused with DOMNodes
+			// TODO: could be lazily-created as we'll have many leaf components
 			this.childComponents = new ComponentCollection();
+			// a id-ref back to the component which owns the collection
 			this.childComponents.componentId = this.id;
 		}, {
 			attachComponent: function(cmp){
@@ -67,43 +119,23 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 				return this;
 			},
 			destroy: function(){
+				// remove registry entry if there is one
 				graph.registry.remove(this);
 			}
 		});
-		
+	}, function(){
+		// init 
 		this.rootComponent = new this.Component({
 			id: "ROOT", type: "ROOT"
 		});
-		this.registry.add(this.rootComponent);
-	}, {
-		// more Graph methods/properties
-		_nextId: 0, 
-		generateId: function(stem){
-			stem = stem || "component";
-			return stem+"_"+(this.nextId++);
-		}, 
-		attachMap: {}, 
-		unattach: function(c) {
-			var attachPoints = this.componentAttachList(c);
-			// remove from each
-			attachPoints.forEach(function(parent){
-				parent.remove(c);
-			}, this);
-		},
-		
-		componentAttachList: function(c){
-			var id = typeof c == "string" ? c : c.id, 
-				attachMap = this.attachMap[id];
-			return lang.keys(attachMap);
-			
-		} 
+		this.registry.add(this.rootComponent);	
 	});
 	
 	
 	describe("Graph", function() {
 		
 		describe("Graph registry", function(){
-			graph = new Graph();
+			var graph = new Graph();
 
 			var thing1 = new graph.Component({
 				id: "thing1", type: "thinger"
@@ -136,7 +168,7 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 		});
 		
 		describe("Graph Component", function(){
-			graph = new Graph();
+			var graph = new Graph();
 
 			var thing1 = new graph.Component({
 				id: "thing1", type: "thinger"
@@ -163,7 +195,7 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 		});
 
 		describe("Graph registry sync", function(){
-			graph = new Graph();
+			var graph = new Graph();
 
 			it("has registered the rootComponent", function() {
 				expect(graph.rootComponent).toBeTruthy();
@@ -203,7 +235,7 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 			});
 		});
 		define("Attachment", function(){
-			graph = new Graph();
+			var graph = new Graph();
 			var thing0 = new graph.Component({
 					id: "thing_0", type: "thinger"
 				}),
@@ -213,7 +245,9 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 				thing2 = new graph.Component({
 					id: "thing_2", type: "thinger"
 				});
-			
+			// note: thingN are orphaned and associated with 
+			// but not attached to the graph; they are not in the heirarchy
+
 			it("tracks component attachment", function() {
 				
 				thing0.attachComponent(thing1);
@@ -221,7 +255,7 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 				var list = graph.componentAttachList(thing1);
 				
 				expect(list.length).toEqual(1);
-				expect(list[0]).toEqual(thing0);
+					expect(list[0]).toEqual(thing0);
 
 			});
 
