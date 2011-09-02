@@ -190,7 +190,7 @@ define(['lib/compose'], function(Compose){
 			var idx = this.indexOf(entry);
 			if(idx > -1) {
 				this.splice(idx, 1);
-				this._unregister(entry);
+				// this._unregister(entry);
 			}
 		},
 		byId: function(id) {
@@ -206,7 +206,16 @@ define(['lib/compose'], function(Compose){
 				byId[entry.id] = entry;
 			}, this);
 			return newAr;
-		}
+		}, 
+		splice: before(function(idx, howMany) {
+			// unregister items to be removed
+			for(var i=idx; i<Math.min(this.length, idx+howMany); i++){
+				this._unregister(this[i]);
+			}
+			for(var j=2; j<arguments.length; j++){
+				this._register(arguments[j]);
+			}
+		})
 	}, function(){
 		this._byId = {};
 		if(arguments.length){
