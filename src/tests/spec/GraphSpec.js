@@ -30,11 +30,17 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 			// get a list of everything this component is attached to
 			var id = typeof c == "string" ? c : c.id, 
 				attachMap = this.attachMap[id], 
-				attachIds = lang.keys(attachMap) || []; 
+				attachIds = attachMap && lang.keys(attachMap) || [], 
+				registry = this.registry;
 			
-			var list = attachIds.map( 
-				lang.bind(this.registry, "byId") 
-			);
+			var list = [], 
+				comp = null;
+			for(var i=0, len=attachIds.length; i<len; i++){
+				comp = registry.byId(attachIds[i]);
+				if(comp) {
+					list.push(comp);
+				}
+			}
 			return list;
 		}
 	}, function(){
@@ -65,7 +71,7 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 		// use a closure to define a ComponentCollection class 
 		// that's hard-linked to this graph 
 		var graph = this; 
-		var ComponentCollection = this.ComponentCollection = Compose(Compose, lang.KeyedArray, {
+		var ComponentCollection = this.ComponentCollection = Compose(lang.KeyedArray, {
 			_register: Compose.before(function(c){
 				// hook the '_register' method of KeyedArray
 				// to make an entry for this item in the graph-wide registry
@@ -91,7 +97,7 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 				// a component is being detached
 				// break link between the attachee and attached
 				var attachTo = graph.attachMap[c.id] || (graph.attachMap[c.id] = {});
-				delete attachTo[componentId];
+				delete attachTo[this.componentId];
 			}) 
 		});
 			
@@ -108,6 +114,10 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 			this.childComponents = new ComponentCollection();
 			// a id-ref back to the component which owns the collection
 			this.childComponents.componentId = this.id;
+
+			// automatically place created components in the graph registry
+			// those does *not* mean they are in the heirarchy
+			graph.registry.add(this);	
 		}, {
 			attachComponent: function(cmp){
 				this.childComponents.push(cmp);
@@ -119,7 +129,7 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 				return this;
 			},
 			destroy: function(){
-				// remove registry entry if there is one
+				// remove registry entry
 				graph.registry.remove(this);
 			}
 		});
@@ -128,7 +138,6 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 		this.rootComponent = new this.Component({
 			id: "ROOT", type: "ROOT"
 		});
-		this.registry.add(this.rootComponent);	
 	});
 	
 	
@@ -192,6 +201,18 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 				expect(c.attachComponent).toBeDefined();
 				expect(c.detachComponent).toBeDefined();
 			});
+			it("automatically registers components on creation", function(){
+				expect(graph.registry.byId("thing1")).toEqual(thing1);
+			})
+
+			it("automatically unregisters components on destruction", function(){
+				var deadthing = new graph.Component({
+					id: "dead", type: "thinger"
+				});
+				expect(graph.registry.byId("dead")).toEqual(deadthing);
+				deadthing.destroy();
+				expect(graph.registry.byId("dead")).toBeFalsy();
+			})
 		});
 
 		describe("Graph registry sync", function(){
@@ -245,32 +266,61 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 				thing2 = new graph.Component({
 					id: "thing_2", type: "thinger"
 				});
-			// note: thingN are orphaned and associated with 
-			// but not attached to the graph; they are not in the heirarchy
+			// note: thingN are orphaned; 
+			// they are associated with, but not attached to the graph; 
+			// they are not in the heirarchy
 
 			it("tracks component attachment", function() {
-				
 				thing0.attachComponent(thing1);
 
 				var list = graph.componentAttachList(thing1);
 				
 				expect(list.length).toEqual(1);
-					expect(list[0]).toEqual(thing0);
+				expect(list[0]).toEqual(thing0);
+			});
+		});
+		define("Detachment", function(){
+			var graph = new Graph();
+			var thing0 = new graph.Component({
+					id: "thing_0", type: "thinger"
+				});
+		
+			it("detaches components", function() {
+				var thingD = new graph.Component({
+					id: "thing_D", type: "thinger"
+				}), 
+				root = graph.rootComponent;
+				
+				var childLen = root.childComponents.length;
+				
+				// where am I attached? should be empty
+				expect(graph.componentAttachList(thingD).length).toEqual(0);
+				
+				root.attachComponent(thingD);
+				
+				// childComponent list should have grown
+				expect(root.childComponents.length).toEqual(childLen + 1);
+				
+				// where am I attached? should be ["ROOT"]
+				var list = graph.componentAttachList(thingD);
+				expect(list.length).toEqual(1);
+				expect(list[0]).toEqual( root );
 
+				// take it back out
+				root.detachComponent(thingD);
+				expect(root.childComponents.length).toEqual(childLen);
+				expect(root.childComponents.indexOf(thingD)).toEqual(-1);
+
+				// where am I attached now? should be []
+				expect(graph.componentAttachList(thingD).length).toEqual(0);
 			});
 
-			// it("unregisters detached components", function() {
-			// 	var c = new graph.Component({
-			// 		id: "cdetached"
-			// 	});
-			// 	graph.rootComponent.attachComponent(c);
-			// 	expect(graph.registry.byId("cdetached")).toEqual(c);
-			// 	
-			// 	graph.rootComponent.detachComponent(c);
-			// 	expect(c).toBeTruthy(); // component shouldn't be destroyed
-			// 	// should exist in the registry as long as its attached somewhere?
-			// 	expect(graph.registry.byId("cdetached")).toEqual(c);
-			// });
+			// thing th1 has behavior bv1 
+			// bv1 is attached to th1
+			// the loop will find and call bv1 in the context of th1
+			// bv1 is destroyed
+			// 	bv1.childComponents list is emptied
+			// 	bv1 is removed from th1 attach list
 		});
 
 		// expect(emptyKeyed.length).toBeDefined();
