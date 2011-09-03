@@ -42,6 +42,21 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 				}
 			}
 			return list;
+		},
+		_traverse: function(nodes, cb) {
+			console.log("traversing, with: ", nodes.componentId);
+			var node;
+			for(var i=0, len=nodes.length; i<len; i++){
+				node = nodes[i];
+				cb(node);
+				if(node.childComponents && node.childComponents.length) {
+					this._traverse(node.childComponents, cb);
+				}
+			}
+		},
+		traverse: function(cb, startNode) {
+			startNode = startNode || this.rootComponent;
+			this._traverse([startNode], cb);
 		}
 	}, function(){
 		// unshare immutable prototype properties
@@ -71,6 +86,7 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 		// use a closure to define a ComponentCollection class 
 		// that's hard-linked to this graph 
 		var graph = this; 
+		// think 'childNodes'
 		var ComponentCollection = this.ComponentCollection = Compose(lang.KeyedArray, {
 			_register: Compose.before(function(c){
 				// hook the '_register' method of KeyedArray
@@ -255,7 +271,7 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 				
 			});
 		});
-		define("Attachment", function(){
+		describe("Attachment", function(){
 			var graph = new Graph();
 			var thing0 = new graph.Component({
 					id: "thing_0", type: "thinger"
@@ -279,7 +295,7 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 				expect(list[0]).toEqual(thing0);
 			});
 		});
-		define("Detachment", function(){
+		describe("Detachment", function(){
 			var graph = new Graph();
 			var thing0 = new graph.Component({
 					id: "thing_0", type: "thinger"
@@ -321,6 +337,79 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 			// bv1 is destroyed
 			// 	bv1.childComponents list is emptied
 			// 	bv1 is removed from th1 attach list
+		});
+		describe("Graph heirarchy", function(){
+			var graph = new Graph(), 
+				graphRegistry = graph.registry, 
+				graphRoot = graph.rootComponent;
+				
+			["thing0", "thing1", "thing2"].forEach(function(name, idx){
+				graphRoot.attachComponent(new graph.Component({
+					id: name, type: idx % 2 ? "odd" : "even"
+				}))
+			});
+
+			it("registered top-level components", function() {
+				expect(
+					graphRegistry.byId("thing0") &&
+					graphRegistry.byId("thing1") &&
+					graphRegistry.byId("thing2")
+				).toBeTruthy();
+			});
+			
+			["cthing0", "cthing1", "cthing2"].forEach(function(name, idx){
+				graphRegistry.byId("thing0").attachComponent(new graph.Component({
+					id: name, type: idx % 2 ? "odd" : "even"
+				}))
+			});
+			
+			it("registered child components", function() {
+				expect(
+					graphRegistry.byId("cthing0") &&
+					graphRegistry.byId("cthing1") &&
+					graphRegistry.byId("cthing2")
+				).toBeTruthy();
+			});
+			it("created the correct heirarchy", function() {
+				expect(
+					graphRoot.childComponents.length
+				).toEqual(3);
+
+				expect(
+					graphRoot.childComponents[0].id
+				).toEqual("thing0");
+
+				expect(
+					graphRoot.childComponents[0].childComponents.length
+				).toEqual(3);
+
+				expect(
+					graphRoot.childComponents[1].childComponents.length
+				).toEqual(0);
+				
+				expect(
+					graphRoot.childComponents[0].childComponents.componentId
+				).toEqual("thing0");
+
+			});
+			describe("Graph traversal", function(){
+				var count = 0, 
+					oddCount = 0, 
+					evenCount = 0;
+				graph.traverse(function(comp){
+					// console.log("callback with: ", comp.id, comp.type);
+					count++;
+					if(comp.type == "odd") {
+						oddCount++;
+					} else if(comp.type == "even") {
+						evenCount++;
+					}
+				});
+				expect( count ).toEqual(7); // 6 components + root
+				expect( evenCount ).toEqual(4); // idx 0,2 of thing, cthing components
+				expect( oddCount ).toEqual(2); // idx 1 of thing, cthing components
+			});
+			
 		});
 
 		// expect(emptyKeyed.length).toBeDefined();
