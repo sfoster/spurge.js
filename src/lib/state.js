@@ -5,6 +5,19 @@ define([
 		
 	Stateful = Compose({
 		// a thing which manages some states
+		// states are a predictable way of generating events
+		// not components, think more phases
+		
+		// TODO: consider a stack of states, i.e. nesting
+		// 	so alive -> asleep -> dreaming
+		// 	I can exit dreaming state but still be sleeping
+		//	I can exit asleep state but still be alive
+		// 	exiting alive state implicitly exits dreaming and asleep states
+		
+		// multiple stacks could exist
+		// 	e.g. alive 
+					// running 
+					// 	jumping
 		__statesByName: null, 
 		__statesByType: null,
 		exitState: function(name){
@@ -61,6 +74,7 @@ define([
 
 			// define destructor for this state
 			state.remove = function(){
+				// FIXME: what state becomes active when a state is removed?
 				var arr = byType[type], 
 					idx = arr.indexOf(state);
 				if(idx >= 0) {
