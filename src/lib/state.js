@@ -50,6 +50,11 @@ define([
 			// exclusive states
 			// set("running", true); implicitly sets "walking" to false first
 			
+			if(name && undefined == props) {
+				props = name; 
+				name = props.name;
+			}
+			
 			// console.log("register state: " + name, this.__statesByType);
 			var state = lang.createObject({
 				active: false,
