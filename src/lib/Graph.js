@@ -24,6 +24,10 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 				parent.remove(c);
 			}, this);
 		},
+		attachTo: function(c, parent) {
+			parent = parent || this.rootComponent;
+			parent.attachComponent(c);
+		},
 	
 		componentAttachList: function(c){
 			// get a list of everything this component is attached to
@@ -44,13 +48,16 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 		},
 		_traverse: function(nodes, cb) {
 			console.log("traversing, with: ", nodes.componentId);
-			var node;
+			var node, 
+				stack = this.stack;
 			for(var i=0, len=nodes.length; i<len; i++){
 				node = nodes[i];
+				stack.push(node);
 				cb(node);
 				if(node.childComponents && node.childComponents.length) {
 					this._traverse(node.childComponents, cb);
 				}
+				stack.pop();
 			}
 		},
 		traverse: function(cb, startNode) {
@@ -59,7 +66,28 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 		}
 	}, function(){
 		// unshare immutable prototype properties
-		this.attachMap = {};
+		this.attachMap = {}, 
+		
+		// stack is a decorated array, to give us sugar for traversal
+		this.stack = lang.mixin([], {
+			get: function(idx){
+				var count=this.length;
+				switch(idx){
+					// fast-track common accessors
+					case undefined: 
+					case 'current': 
+					 	// the last entry
+						return this[count-1];
+					case "parent": 
+						return this[count-2];
+					case "grandparent": 
+						return this[count-3];
+					default: 
+						idx = parseInt(idx, 10);
+						return this[idx < 0 ? count + idx : idx];
+				}
+			}
+		});
 
 		// registry: flat array + lookup for all components
 		this.registry = Compose.create(lang.KeyedArray, {

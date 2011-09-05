@@ -235,7 +235,7 @@ define(['lib/Graph'], function(Graph){
 				).toEqual("thing0");
 
 			});
-			describe("Graph traversal", function(){
+			it("traverses visiting each component", function(){
 				var count = 0, 
 					oddCount = 0, 
 					evenCount = 0;
@@ -251,6 +251,39 @@ define(['lib/Graph'], function(Graph){
 				expect( count ).toEqual(7); // 6 components + root
 				expect( evenCount ).toEqual(4); // idx 0,2 of thing, cthing components
 				expect( oddCount ).toEqual(2); // idx 1 of thing, cthing components
+			});
+
+			it("maintains the correct stack during traversal", function(){
+				expect( graph.stack.length ).toEqual(0); // 
+				expect( graph.stack.get() ).toBeFalsy(); // 
+				graph.traverse(function(comp){
+					
+					if(/^thing\d/.test(comp.id)) {
+						// the first level
+						expect(graph.stack.length).toEqual(2);
+						expect(graph.stack.get()).toEqual(comp);
+						// the parent
+						expect(graph.stack.get("parent")).toEqual(graphRoot);
+						// TODO: test failure by accessing grandparent?
+					} else if(/^cthing\d/.test(comp.id)) {
+						// the 2nd level
+						expect(graph.stack.length).toEqual(3);
+						expect(graph.stack.get()).toEqual(comp);
+						// the parent
+						expect(graph.stack.get("parent").id).toMatch('^thing');
+
+						// the grandparent
+						expect(graph.stack.get("grandparent")).toEqual(graphRoot);
+					} else {
+						// should be the root node
+						expect(graph.stack.length).toEqual(1);
+						expect(graph.stack[0]).toEqual(graphRoot);
+						// synonyms
+						expect(graph.stack.get()).toEqual(graphRoot);
+						expect(graph.stack.get("current")).toEqual(graphRoot);
+						
+					}
+				});
 			});
 			
 		});
