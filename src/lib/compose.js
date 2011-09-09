@@ -19,6 +19,12 @@ define([], function(){
 			Create.prototype = null;
 			return instance;
 		};
+	function validArg(arg){
+		if(!arg){
+			throw new Error("Compose arguments must be functions or objects");
+		}
+		return arg;
+	}
 	// this does the work of combining mixins/prototypes
 	function mixin(instance, args, i){
 		// use prototype inheritance for first arg
@@ -42,7 +48,7 @@ define([], function(){
 				}
 			}else{
 				// it is an object, copy properties, looking for modifiers
-				for(var key in arg){
+				for(var key in validArg(arg)){
 					var value = arg[key];
 					if(typeof value == "function"){
 						if(value.install){
@@ -192,34 +198,28 @@ define([], function(){
 	};
 	Compose.required = required;
 	// get the value of |this| for direct function calls for this mode (strict in ES5)
-	var undefinedThis = (function(){
-		return this; // this depends on strict mode
-	})();
 	
-	var currentConstructors;
 	function extend(){
 		var args = [this];
 		args.push.apply(args, arguments);
-		return Compose.apply(undefinedThis, args);
+		return Compose.apply(0, args);
 	}
 	// Compose a constructor
 	function Compose(base){
 		var args = arguments;
-		if(this != undefinedThis){
-			return mixin(this, arguments, 0); // if it is being applied, mixin into |this| 
-		}
 		var prototype = (args.length < 2 && typeof args[0] != "function") ? 
 			args[0] : // if there is just a single argument object, just use that as the prototype 
-			mixin(delegate(base), arguments, 1); // normally create a delegate to start with			
+			mixin(delegate(validArg(base)), args, 1); // normally create a delegate to start with			
 		function Constructor(){
 			var instance;
-			if(this === undefinedThis){
+			if(this instanceof Constructor){
+				// called with new operator, can proceed as is
+				instance = this;
+			}else{
 				// we allow for direct calls without a new operator, in this case we need to
 				// create the instance ourself.
 				Create.prototype = prototype;
 				instance = new Create();
-			}else{
-				instance = this;
 			}
 			// call all the constructors with the given arguments
 			for(var i = 0; i < constructorsLength; i++){
@@ -239,34 +239,51 @@ define([], function(){
 			}
 			return instance;
 		}
-		Constructor._register = function(){
-			register(constructors);
+		Constructor._getConstructors = function(){
+			return constructors;
 		};
-		currentConstructors = [];
-		register(arguments);
-		var constructors = currentConstructors, 
-			constructorsLength = constructors.length; 
+		var constructors = getConstructors(arguments), 
+			constructorsLength = constructors.length;
 		Constructor.extend = extend;
 		Constructor.prototype = prototype;
 		return Constructor;
 	};
-	function register(args){
-		outer: 
-		for(var i = 0; i < args.length; i++){
-			var arg = args[i];
-			if(typeof arg == "function"){
-				if(arg._register){
-					arg._register();
-				}else{
-					for(var j = 0; j < currentConstructors.length; j++){
-						if(arg == currentConstructors[j]){
-							continue outer;
+	
+	Compose.apply = function(thisObject, args){
+		// apply to the target
+		return thisObject ? 
+			mixin(thisObject, args, 0) : // called with a target object, apply the supplied arguments as mixins to the target object
+			extend.apply.call(Compose, 0, args); // get the Function.prototype apply function, call() it to apply arguments to Compose (the extend doesn't matter, just a handle way to grab apply, since we can't get it off of Compose) 
+	};
+	Compose.call = function(thisObject){
+		// call() should correspond with apply behavior
+		return mixin(thisObject, arguments, 1);
+	};
+	
+	function getConstructors(args){
+		// this function registers a set of constructors for a class, eliminating duplicate
+		// constructors that may result from diamond construction for classes (B->A, C->A, D->B&C, then D() should only call A() once)
+		var constructors = [];
+		function iterate(args, checkChildren){
+			outer: 
+			for(var i = 0; i < args.length; i++){
+				var arg = args[i];
+				if(typeof arg == "function"){
+					if(checkChildren && arg._getConstructors){
+						iterate(arg._getConstructors()); // don't need to check children for these, this should be pre-flattened 
+					}else{
+						for(var j = 0; j < constructors.length; j++){
+							if(arg == constructors[j]){
+								continue outer;
+							}
 						}
+						constructors.push(arg);
 					}
-					currentConstructors.push(arg);
 				}
 			}
 		}
+		iterate(args, true);
+		return constructors;
 	}
 	// returning the export of the module
 	return Compose;
