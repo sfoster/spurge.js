@@ -1,4 +1,5 @@
 define(['lib/lang', 'lib/compose'], function(lang, Compose){
+	console.log("defining Graph");
 	var Graph = Compose({
 		// more Graph methods/properties
 	
@@ -8,6 +9,20 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 			stem = stem || "component";
 			return stem+"_"+(this.nextId++);
 		}, 
+		init: function(){
+			// init 
+			if(!this.Component) {
+				this.Component = Graph.Component;
+			}
+			if(!this.ComponentCollection) {
+				this.ComponentCollection = Graph.ComponentCollection;
+			}
+			
+			this.rootComponent = new this.Component({
+				graph: this,
+				id: "ROOT", type: "ROOT"
+			});
+		},
 		attachMap: {}, 
 		unattach: function(c) {
 			// remove a component from the graph
@@ -66,6 +81,7 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 		}
 	}, function(){
 		// unshare immutable prototype properties
+		console.log("Graph ctor");
 		this.attachMap = {}, 
 		
 		// stack is a decorated array, to give us sugar for traversal
@@ -110,77 +126,105 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 		}); // global lookup for all nodes in the graph
 	
 	
-		// use a closure to define a ComponentCollection class 
-		// that's hard-linked to this graph 
-		var graph = this; 
-		// think 'childNodes'
-		var ComponentCollection = this.ComponentCollection = Compose(lang.KeyedArray, {
-			_register: Compose.before(function(c){
-				// hook the '_register' method of KeyedArray
-				// to make an entry for this item in the graph-wide registry
-
-				// thing1 attaching behaviorA produces
-				// 	thing1.childComponents[behaviorA]
-				// and
-				// 	graph.attachMap.behaviorA.thing1
-			
-				if(!c.id) throw new Error("Cant register component without id: " + c);
-				// a component is being attached
-				if(!graph.registry.byId(c.id)){
-					// make sure its in our graph-wide registry also
-					graph.registry.add(c);
-				}
-				// each component gets its own attach hash
-				var attachTo = graph.attachMap[c.id] || (graph.attachMap[c.id] = {});
-				// track a link between the attachee (the component this collection belongs to) 
-				// ..and the attached
-				attachTo[this.componentId] = c.id;
-			}),
-			_unregister: Compose.before(function(c){
-				// a component is being detached
-				// break link between the attachee and attached
-				var attachTo = graph.attachMap[c.id] || (graph.attachMap[c.id] = {});
-				delete attachTo[this.componentId];
-			}) 
-		});
 		
-		// define a Component class that's hard-linked to this graph 
-		this.Component = Compose(Compose, function(){
-			// generate an id if none was provided
-			if(!this.id) {
-				this.id = graph.generateId();
-			}
+	}, function(){
+		// run the graph's init
+		console.log("Graph ctor(2), calling this.init()");
+		this.init && this.init();
+	});
+	
+	// create a gutted KeyedArray class w/o constructor
+	var _KeyedArray = function(){
+		this._byId = {};
+	};
+	_KeyedArray.prototype = lang.KeyedArray.prototype;
+	// think 'childNodes'
+	console.log("defining ComponentCollection");
+	var ComponentCollection = Graph.ComponentCollection = Compose(Compose, _KeyedArray, function(){
+		var graph = this.graph;
+		if(!graph) {
+			throw new Error("Missing graph property in ComponentCollection constructor ", this);
+		}
+	}, {
+		_register: Compose.before(function(c){
+			// hook the '_register' method of KeyedArray
+			// to make an entry for this item in the graph-wide registry
 
+			// thing1 attaching behaviorA produces
+			// 	thing1.childComponents[behaviorA]
+			// and
+			// 	graph.attachMap.behaviorA.thing1
+
+			var graph = this.graph;
+		
+			if(!c.id) throw new Error("Cant register component without id: " + c);
+			// a component is being attached
+			if(!graph.registry.byId(c.id)){
+				// make sure its in our graph-wide registry also
+				graph.registry.add(c);
+			}
+			// each component gets its own attach hash
+			var attachTo = graph.attachMap[c.id] || (graph.attachMap[c.id] = {});
+			// track a link between the attachee (the component this collection belongs to) 
+			// ..and the attached
+			attachTo[this.componentId] = c.id;
+		}),
+		_unregister: Compose.before(function(c){
+			var graph = this.graph;
+			// a component is being detached
+			// break link between the attachee and attached
+			var attachTo = graph.attachMap[c.id] || (graph.attachMap[c.id] = {});
+			delete attachTo[this.componentId];
+		}) 
+	});
+
+	// define a Component class that's hard-linked to this graph 
+	console.log("defining Graph.Component");
+	var Component = Graph.Component = Compose(Compose, function(){
+		console.log("Graph.Component ctor");
+		var graph = this.graph;
+		if(!graph) {
+			throw new Error("Missing graph property in Component constructor ", this);
+		}
+		// generate an id if none was provided
+		console.log("Graph.Component ctor, checking id: ", this.id);
+		if(!this.id) {
+			this.id = graph.generateId();
+		}
+
+		// automatically place created components in the graph registry
+		// those does *not* mean they are in the heirarchy
+		graph.registry.add(this);	
+	}, {
+		init: function(){
+			console.log("Graph.Component init");
+			var graph = this.graph;
 			// childComponents is verbose but unambiguous 
 			// and less liable to be confused with DOMNodes
 			// TODO: could be lazily-created as we'll have many leaf components
-			this.childComponents = new ComponentCollection();
+			this.childComponents = new graph.ComponentCollection({ graph: graph });
 			// a id-ref back to the component which owns the collection
 			this.childComponents.componentId = this.id;
-
-			// automatically place created components in the graph registry
-			// those does *not* mean they are in the heirarchy
-			graph.registry.add(this);	
-		}, {
-			attachComponent: function(cmp){
-				this.childComponents.push(cmp);
-				return this;
-			},
-			detachComponent: function(cmp){
-				if(!cmp.id) throw new Error("Cant detachComponent without id: " + cmp);
-				this.childComponents.remove(cmp);
-				return this;
-			},
-			destroy: function(){
-				// remove registry entry
-				graph.registry.remove(this);
-			}
-		});
+		},
+		attachComponent: function(cmp){
+			this.childComponents.push(cmp);
+			cmp.onAttach && cmp.onAttach(this); // you are now attached to me
+			return this;
+		},
+		detachComponent: function(cmp){
+			if(!cmp.id) throw new Error("Cant detachComponent without id: " + cmp);
+			this.childComponents.remove(cmp);
+			cmp.onDetach && cmp.onDetach(this); // you are detached from me
+			return this;
+		},
+		destroy: function(){
+			// remove registry entry
+			graph.registry.remove(this);
+		}
 	}, function(){
-		// init 
-		this.rootComponent = new this.Component({
-			id: "ROOT", type: "ROOT"
-		});
+		console.log("Graph.Component init: ", this.id);
+		// run any init method
+		this.init && this.init();
 	});
 
 	return Graph;
