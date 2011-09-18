@@ -1,0 +1,134 @@
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="../css/tester.css"/>
+		<style>
+			#box {
+				border: 1px solid blue;
+			}
+			#fly {
+				-webkit-transition: box-shadow,background-color 0.05s,0.05s linear;
+				background: url('../assets/fly1.png') no-repeat;
+				width: 32px;
+				height: 32px;
+				z-index: 10;
+				margin-top: -16px;
+				margin-left: -16px;
+			}
+			.abs {
+				position: absolute;
+				top: 0;
+				left: 0;
+				z-index: 1;
+			}
+		</style>
+		<script src="../lib/curl.js"></script>
+		<script>
+		function radiansToDegrees(r) {
+			return r * (180/Math.PI);
+		}
+		function degreesToRadians(d) {
+			return d/(180/Math.PI);
+		}
+		
+			require = curl;
+			require({
+				baseUrl: '..',
+				paths: {
+					assets: '../assets'
+				}
+			}, [
+				'lib/domReady', 'lib/touch', 'lib/rendering'
+			], function(domReady, touch, rendering){
+				var ua = rendering.ua;
+				console.log("userAgent: ",ua);
+				rotate = function(elm, angle) {
+					// TODO: prefix isn't necessary for latest browser version e.g. FF5
+					switch(ua){
+						case 'webkit': 
+							pname = "WebkitTransform"; break;
+						case 'gecko': 
+							pname = "MozTransform"; break;
+						case 'ie': 
+							pname = "msTransform"; break;
+						case 'opera': 
+							pname = "OTransform"; break;
+						default: 
+							pname = "transform"
+					}
+					elm.style[pname] = 'rotate('+angle+'deg)';
+				}
+
+				domReady(function(){
+					touch.init();
+					var c = document.getElementById("box"), 
+						ctx = c.getContext("2d");
+					
+					// initial position
+					var posn = { x: 300, y: 50 }, 
+						flyNode = document.getElementById("fly"); 
+					flyNode.style.left = posn.x + "px";
+					flyNode.style.top = posn.y + "px";
+					
+					document.addEventListener("mouseup", function(evt){
+						ctx.clearRect(0,0,c.width,c.height);
+						// direction to head
+						var pt = {
+							x: evt.pageX, 
+							y: evt.pageY
+						};
+						
+						var rotationOffset = Math.PI / 2; // account for orientation of our graphic vs. origin of the angle
+						// draw a box where our target is
+						ctx.fillStyle = "#ff9999";
+						ctx.fillRect(Math.min(c.width, pt.x)-2, Math.min(c.height, pt.y)-2, 4, 4);
+						
+						var angleOffset = 0; // degreesToRadians(90);
+
+						// angle we'll head, using inverse tangent
+						var rawAngle = Math.atan2(pt.y - posn.y, pt.x - posn.x), 
+							rotateDegrees = radiansToDegrees(rawAngle + rotationOffset);
+						rotate(document.getElementById("fly"), rotateDegrees);
+						
+						console.log("counter-clockwise angle: %s (%s)", rawAngle, radiansToDegrees(rawAngle));
+						// atan2 gives us counter-clockwise angle, and our axes are inverted..
+						var angle = (2.5*Math.PI) -rawAngle;
+						console.log("clockwise angle: %s (%s)", angle, radiansToDegrees(angle));
+						
+						var distance = Math.sqrt( 
+								Math.pow(Math.abs(pt.x - posn.x), 2) + 
+								Math.pow(Math.abs(pt.y - posn.y), 2)
+							);
+							speed = Math.min(50, distance), 
+						 	moveY = speed * Math.cos(angle), 
+							moveX = speed * Math.sin(angle); 
+						
+						console.log("distance: %s, speed: %s", distance, speed);
+						console.log("move from: %s/%s to %s/%s", posn.x, posn.y, pt.x, pt.y);
+						console.log("move by: %s/%s to %s/%s", moveX, moveY, posn.x+moveX, posn.y+moveY);
+						ctx.beginPath();
+						ctx.strokeStyle = "#00cc00";
+						ctx.moveTo(posn.x, posn.y);
+						ctx.lineTo(posn.x, pt.y);
+						ctx.stroke();
+
+						ctx.moveTo(posn.x, posn.y);
+						ctx.lineTo(pt.x, posn.y);
+						ctx.stroke();
+						
+						ctx.strokeStyle = "#ff0000";
+						ctx.moveTo(posn.x, posn.y);
+						ctx.lineTo(posn.x + moveX, posn.y + moveY);
+						ctx.stroke();
+
+					}, false);
+					
+					
+				});
+			}); 
+		</script>
+	</head>
+	<body>
+		<canvas id="box" width="500" height="200" class="abs"></canvas>
+		<div id="fly" class="abs" style="top: 60px; left: 60px"></div>
+	</body>
+</html>
