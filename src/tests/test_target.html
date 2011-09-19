@@ -64,61 +64,101 @@
 						ctx = c.getContext("2d");
 					
 					// initial position
-					var posn = { x: 300, y: 50 }, 
-						flyNode = document.getElementById("fly"); 
-					flyNode.style.left = posn.x + "px";
-					flyNode.style.top = posn.y + "px";
+					var flyNode = document.getElementById("fly"); 
+
+					var fly = {
+						domNode: flyNode,
+						_rotationOffset: Math.PI / 2, // account for orientation of our graphic vs. origin of the angle
+						speed: 2,
+						rotateTo: function(radians){
+							this.rotation = radians;
+							var deg = radiansToDegrees(radians + this._rotationOffset);
+							rotate(this.domNode, deg);
+						},
+						placeAt: function(x, y){
+							this.x = x; 
+							this.y = y;
+							var ns = this.domNode.style;
+							ns.left = x+"px";
+							ns.top = y+"px";
+						},
+						update: function(){
+							var target = this.target;
+							if(! target) {
+								return;
+							}
+							if(target.x == this.x && target.y == this.y){
+								return;
+							}
+
+							// angle we'll head, using inverse tangent
+							var rawAngle = Math.atan2(target.y - this.y, target.x - this.x);
+							this.rotateTo(rawAngle);
+
+							// console.log("counter-clockwise angle: %s (%s)", rawAngle, radiansToDegrees(rawAngle));
+							// atan2 gives us counter-clockwise angle, and our axes are inverted..
+							var angle = (2.5*Math.PI) -rawAngle;
+							// console.log("clockwise angle: %s (%s)", angle, radiansToDegrees(angle));
+
+							var distance = Math.sqrt( 
+									Math.pow(Math.abs(target.x - this.x), 2) + 
+									Math.pow(Math.abs(target.y - this.y), 2)
+								);
+								speed = Math.min(this.speed, distance), 
+							 	moveY = speed * Math.cos(angle), 
+								moveX = speed * Math.sin(angle); 
+
+							// console.log("distance: %s, speed: %s", distance, speed);
+							// console.log("move from: %s/%s to %s/%s", this.x, this.y, target.x, target.y);
+							// console.log("move by: %s/%s to %s/%s", moveX, moveY, this.x+moveX, this.y+moveY);
+							
+							ctx.beginPath();
+							ctx.strokeStyle = "#00cc00";
+							ctx.moveTo(this.x, this.y);
+							ctx.lineTo(this.x, target.y);
+							ctx.stroke();
+							
+							ctx.moveTo(this.x, this.y);
+							ctx.lineTo(target.x, fly.y);
+							ctx.stroke();
+							
+							ctx.strokeStyle = "#ff0000";
+							ctx.moveTo(this.x, this.y);
+							ctx.lineTo(this.x + moveX, this.y + moveY);
+							ctx.stroke();
+							
+							// update our coordinates
+							this.placeAt(this.x + moveX, this.y + moveY);
+							// snap to target if its close enough?
+						},
+						setTarget: function(target){
+							this.target = target;
+						}
+					};
+					fly.placeAt(200,50);
+					
+					var loopItv = null;
 					
 					document.addEventListener("mouseup", function(evt){
 						ctx.clearRect(0,0,c.width,c.height);
 						// direction to head
-						var pt = {
+						var target = {
 							x: evt.pageX, 
 							y: evt.pageY
 						};
 						
-						var rotationOffset = Math.PI / 2; // account for orientation of our graphic vs. origin of the angle
 						// draw a box where our target is
 						ctx.fillStyle = "#ff9999";
-						ctx.fillRect(Math.min(c.width, pt.x)-2, Math.min(c.height, pt.y)-2, 4, 4);
+						ctx.fillRect(Math.min(c.width, target.x)-2, Math.min(c.height, target.y)-2, 4, 4);
 						
-						var angleOffset = 0; // degreesToRadians(90);
-
-						// angle we'll head, using inverse tangent
-						var rawAngle = Math.atan2(pt.y - posn.y, pt.x - posn.x), 
-							rotateDegrees = radiansToDegrees(rawAngle + rotationOffset);
-						rotate(document.getElementById("fly"), rotateDegrees);
+						fly.setTarget(target);
 						
-						console.log("counter-clockwise angle: %s (%s)", rawAngle, radiansToDegrees(rawAngle));
-						// atan2 gives us counter-clockwise angle, and our axes are inverted..
-						var angle = (2.5*Math.PI) -rawAngle;
-						console.log("clockwise angle: %s (%s)", angle, radiansToDegrees(angle));
-						
-						var distance = Math.sqrt( 
-								Math.pow(Math.abs(pt.x - posn.x), 2) + 
-								Math.pow(Math.abs(pt.y - posn.y), 2)
-							);
-							speed = Math.min(50, distance), 
-						 	moveY = speed * Math.cos(angle), 
-							moveX = speed * Math.sin(angle); 
-						
-						console.log("distance: %s, speed: %s", distance, speed);
-						console.log("move from: %s/%s to %s/%s", posn.x, posn.y, pt.x, pt.y);
-						console.log("move by: %s/%s to %s/%s", moveX, moveY, posn.x+moveX, posn.y+moveY);
-						ctx.beginPath();
-						ctx.strokeStyle = "#00cc00";
-						ctx.moveTo(posn.x, posn.y);
-						ctx.lineTo(posn.x, pt.y);
-						ctx.stroke();
-
-						ctx.moveTo(posn.x, posn.y);
-						ctx.lineTo(pt.x, posn.y);
-						ctx.stroke();
-						
-						ctx.strokeStyle = "#ff0000";
-						ctx.moveTo(posn.x, posn.y);
-						ctx.lineTo(posn.x + moveX, posn.y + moveY);
-						ctx.stroke();
+						if(loopItv) {
+							clearInterval(loopItv);
+						}
+						loopItv = setInterval(function(){
+							fly.update();
+						}, 1000/60);
 
 					}, false);
 					
