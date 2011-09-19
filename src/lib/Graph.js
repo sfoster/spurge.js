@@ -7,7 +7,7 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 		_nextId: 0, 
 		generateId: function(stem){
 			stem = stem || "component";
-			return stem+"_"+(this.nextId++);
+			return stem+"_"+(this._nextId++);
 		}, 
 		init: function(){
 			// init 
