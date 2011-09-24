@@ -140,11 +140,11 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 	_KeyedArray.prototype = lang.KeyedArray.prototype;
 	// think 'childNodes'
 	// console.log("defining ComponentCollection");
-	var ComponentCollection = Graph.ComponentCollection = Compose(Compose, _KeyedArray, function(){
-		var graph = this.graph;
-		if(!graph) {
-			throw new Error("Missing graph property in ComponentCollection constructor ", this);
-		}
+	var ComponentCollection = Graph.ComponentCollection = Compose(_KeyedArray, function(){
+		// var graph = this.graph;
+		// if(!graph) {
+		// 	throw new Error("Missing graph property in ComponentCollection constructor ", this);
+		// }
 	}, {
 		_register: Compose.before(function(c){
 			// hook the '_register' method of KeyedArray
@@ -202,9 +202,11 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 			// childComponents is verbose but unambiguous 
 			// and less liable to be confused with DOMNodes
 			// TODO: could be lazily-created as we'll have many leaf components
-			this.childComponents = new graph.ComponentCollection({ graph: graph });
+			var childComponents = this.childComponents = new graph.ComponentCollection();
+			childComponents.graph = graph;
+
 			// a id-ref back to the component which owns the collection
-			this.childComponents.componentId = this.id;
+			childComponents.componentId = this.id;
 		},
 		attachComponent: function(cmp){
 			// TODO: support operators to indicate precedence?
