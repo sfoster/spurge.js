@@ -81,7 +81,7 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 		}
 	}, function(){
 		// unshare immutable prototype properties
-		console.log("Graph ctor");
+		// console.log("Graph ctor");
 		this.attachMap = {}, 
 		
 		// stack is a decorated array, to give us sugar for traversal
@@ -129,7 +129,7 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 		
 	}, function(){
 		// run the graph's init
-		console.log("Graph ctor(2), calling this.init()");
+		// console.log("Graph ctor(2), calling this.init()");
 		this.init && this.init();
 	});
 	
@@ -139,7 +139,7 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 	};
 	_KeyedArray.prototype = lang.KeyedArray.prototype;
 	// think 'childNodes'
-	console.log("defining ComponentCollection");
+	// console.log("defining ComponentCollection");
 	var ComponentCollection = Graph.ComponentCollection = Compose(Compose, _KeyedArray, function(){
 		var graph = this.graph;
 		if(!graph) {
@@ -179,15 +179,15 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 	});
 
 	// define a Component class that's hard-linked to this graph 
-	console.log("defining Graph.Component");
+	// console.log("defining Graph.Component");
 	var Component = Graph.Component = Compose(Compose, function(){
-		console.log("Graph.Component ctor");
+		// console.log("Graph.Component ctor");
 		var graph = this.graph;
 		if(!graph) {
 			throw new Error("Missing graph property in Component constructor ", this);
 		}
 		// generate an id if none was provided
-		console.log("Graph.Component ctor, checking id: ", this.id);
+		// console.log("Graph.Component ctor, checking id: ", this.id);
 		if(!this.id) {
 			this.id = graph.generateId();
 		}
@@ -197,7 +197,7 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 		graph.registry.add(this);	
 	}, {
 		init: function(){
-			console.log("Graph.Component init");
+			// console.log("Graph.Component init");
 			var graph = this.graph;
 			// childComponents is verbose but unambiguous 
 			// and less liable to be confused with DOMNodes
@@ -207,6 +207,7 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 			this.childComponents.componentId = this.id;
 		},
 		attachComponent: function(cmp){
+			// TODO: support operators to indicate precedence?
 			this.childComponents.push(cmp);
 			cmp.onAttach && cmp.onAttach(this); // you are now attached to me
 			return this;
@@ -219,10 +220,11 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 		},
 		destroy: function(){
 			// remove registry entry
+			var graph = this.graph;
 			graph.registry.remove(this);
 		}
 	}, function(){
-		console.log("Graph.Component init: ", this.id);
+		// console.log("Graph.Component init: ", this.id);
 		// run any init method
 		this.init && this.init();
 	});
