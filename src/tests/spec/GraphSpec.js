@@ -6,6 +6,7 @@ define(['lib/Graph'], function(Graph){
 			var graph = new Graph();
 
 			var thing1 = new graph.Component({
+				graph: graph,
 				id: "thing1", type: "thinger"
 			});
 
@@ -39,6 +40,7 @@ define(['lib/Graph'], function(Graph){
 			var graph = new Graph();
 
 			var thing1 = new graph.Component({
+				graph: graph,
 				id: "thing1", type: "thinger"
 			});
 
@@ -48,6 +50,7 @@ define(['lib/Graph'], function(Graph){
 
 			it("can be instantiated", function() {
 				var c = new graph.Component({
+					graph: graph,
 					id: "c1"
 				});
 				expect(c).toBeTruthy();
@@ -55,6 +58,7 @@ define(['lib/Graph'], function(Graph){
 			});
 			it("has expected methods", function() {
 				var c = new graph.Component({
+					graph: graph,
 					id: "cmethods"
 				});
 				expect(c.attachComponent).toBeDefined();
@@ -66,6 +70,7 @@ define(['lib/Graph'], function(Graph){
 
 			it("automatically unregisters components on destruction", function(){
 				var deadthing = new graph.Component({
+					graph: graph,
 					id: "dead", type: "thinger"
 				});
 				expect(graph.registry.byId("dead")).toEqual(deadthing);
@@ -85,6 +90,7 @@ define(['lib/Graph'], function(Graph){
 			});
 			it("registers attached components", function() {
 				var c = new graph.Component({
+					graph: graph,
 					id: "cattached"
 				});
 				graph.rootComponent.attachComponent(c);
@@ -95,9 +101,11 @@ define(['lib/Graph'], function(Graph){
 			});
 			it("registers nested components", function() {
 				var thing0 = new graph.Component({
+						graph: graph,
 						id: "thing_0", type: "thinger"
 					}),
 					thing1 = new graph.Component({
+						graph: graph,
 						id: "thing_1", type: "thinger"
 					});
 				
@@ -117,12 +125,15 @@ define(['lib/Graph'], function(Graph){
 		describe("Attachment", function(){
 			var graph = new Graph();
 			var thing0 = new graph.Component({
+					graph: graph,
 					id: "thing_0", type: "thinger"
 				}),
 				thing1 = new graph.Component({
+					graph: graph,
 					id: "thing_1", type: "thinger"
 				}),
 				thing2 = new graph.Component({
+					graph: graph,
 					id: "thing_2", type: "thinger"
 				});
 			// note: thingN are orphaned; 
@@ -141,11 +152,13 @@ define(['lib/Graph'], function(Graph){
 		describe("Detachment", function(){
 			var graph = new Graph();
 			var thing0 = new graph.Component({
+					graph: graph,
 					id: "thing_0", type: "thinger"
 				});
 		
 			it("detaches components", function() {
 				var thingD = new graph.Component({
+					graph: graph,
 					id: "thing_D", type: "thinger"
 				}), 
 				root = graph.rootComponent;
@@ -188,6 +201,7 @@ define(['lib/Graph'], function(Graph){
 				
 			["thing0", "thing1", "thing2"].forEach(function(name, idx){
 				graphRoot.attachComponent(new graph.Component({
+					graph: graph,
 					id: name, type: idx % 2 ? "odd" : "even"
 				}))
 			});
@@ -202,6 +216,7 @@ define(['lib/Graph'], function(Graph){
 			
 			["cthing0", "cthing1", "cthing2"].forEach(function(name, idx){
 				graphRegistry.byId("thing0").attachComponent(new graph.Component({
+					graph: graph,
 					id: name, type: idx % 2 ? "odd" : "even"
 				}))
 			});
@@ -287,103 +302,6 @@ define(['lib/Graph'], function(Graph){
 			});
 			
 		});
-
-		// expect(emptyKeyed.length).toBeDefined();
-
-
-		// Graph should
-		// DOM API: 
-		// 	appendChild, removeChild
-		// 	getElementById
-		// 	getElementByName|Type|Selector
-		// 	childNodes
-		// 	attributes
-		// 	sibling traversal
-		// 	behave like an array, at any/all levels
-		
-		// If we copy DOM API, will it be confusing? 
-		// get children
-		// byId lookup
-		
-		// byType|Family|Tag|Attribute collections
-		// componentRegistry
-		// 	decorates accessors/mutators to ensure it gets notified when stuff is created/moved/deleted
-
-		// var thing = {id: "thing"},
-		// 	one = {id: "one"}, 
-		// 	two = {id: "two"}, 
-		// 	three = {id: "three"}, 
-		// 	four = {id: "four"};
-		// 
-		// define("KeyedArray is Array-like", function(){
-		// 	it("creates object with the correct number of members", function() {
-		// 		var emptyKeyed = new KeyedArray(), 
-		// 			oneKeyed = new KeyedArray({id: "one"}), 
-		// 			fourKeyed = new KeyedArray({id: "one"}, {id: "two"}, {id: "three"}, {id: "four"});
-		// 
-		// 		expect(emptyKeyed.length).toBeDefined();
-		// 		expect(emptyKeyed.length).toEqual(1);
-		// 		expect(oneKeyed.length).toEqual(1);
-		// 		expect(fourKeyed.length).toEqual(4);
-		// 	});
-		// 	it("has index-addressable members", function() {
-		// 		var oneKeyed = new KeyedArray({id: "one"}),
-		// 			fourKeyed = new KeyedArray({id: "one"}, {id: "two"}, {id: "three"}, {id: "four"});
-		// 
-		// 		expect(emptyKeyed[0]).toBeDefined();
-		// 		expect(emptyKeyed[0].id).toEqual("one");
-		// 		expect(emptyKeyed[3].i).toEqual("three");
-		// 	});
-		// 	
-		// 	it("preserves correct order", function() {
-		// 		var fwdKeyed = new KeyedArray({id: "one"}, {id: "two"}, {id: "three"}, {id: "four"}), 
-		// 			backwdKeyed = new KeyedArray({id: "four"}, {id: "three"}, {id: "two"}, {id: "one"});
-		// 			
-		// 		expect(fwdKeyed[0].id).toEqual("one");
-		// 		expect(fwdKeyed[3].id).toEqual("four");
-		// 		expect(backwdKeyed[0].id).toEqual("four");
-		// 		expect(backwdKeyed[3].id).toEqual("one");
-		// 	});
-		// 
-		// 	it("pushes just like an array", function() {
-		// 		var emptyKeyed = new KeyedArray(), 
-		// 			emptyAr = new Array(),
-		// 			populatedKeyed = new KeyedArray(one, two, three, four), 
-		// 			populatedAr = new Array(one, two, three, four);
-		// 		
-		// 		expect(emptyKeyed.push(thing)).toEqual(emptyAr.push(thing));
-		// 		expect(emptyKeyed.length).toEqual(emptyAr.length);
-		// 		expect(emptyKeyed.push(one, two)).toEqual(emptyAr.push(one, two));
-		// 		expect(emptyKeyed.length).toEqual(emptyAr.length);
-		// 		expect(populatedKeyed.push(thing)).toEqual(populatedAr.push(thing));
-		// 		expect(populatedKeyed.length).toEqual(populatedAr.length);
-		// 	});
-		// 
-		// 	it("pops just like an array", function() {
-		// 		var emptyKeyed = new KeyedArray(), 
-		// 			emptyAr = new Array(),
-		// 			populatedKeyed = new KeyedArray(one, two, three, four), 
-		// 			populatedAr = new Array(one, two, three, four);
-		// 		
-		// 		expect(emptyKeyed.pop()).toEqual(emptyAr.pop());
-		// 		expect(emptyKeyed.length).toEqual(emptyAr.length);
-		// 		expect(populatedKeyed.pop()).toEqual(populatedAr.pop());
-		// 		expect(populatedKeyed.length).toEqual(populatedAr.length);
-		// 	});
-		// 
-		// 	it("shifts just like an array", function() {
-		// 		var emptyKeyed = new KeyedArray(), 
-		// 			emptyAr = new Array(),
-		// 			populatedKeyed = new KeyedArray(one, two, three, four), 
-		// 			populatedAr = new Array(one, two, three, four);
-		// 		
-		// 		expect(emptyKeyed.shift()).toEqual(emptyAr.shift());
-		// 		expect(emptyKeyed.length).toEqual(emptyAr.length);
-		// 		expect(populatedKeyed.shift()).toEqual(populatedAr.shift());
-		// 		expect(populatedKeyed.length).toEqual(populatedAr.length);
-		// 	});
-		// 
-		// });
 	});
 	
 });
