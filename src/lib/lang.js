@@ -1,24 +1,16 @@
-define(['lib/compose'], function(Compose){
+define(['lib/compose', 'lib/lang/array', 'lib/lang/object', 'lib/KeyedArray'], function(Compose, array, object, KeyedArray){
 	console.log("lang module");
 	
 	var after = Compose.after, 
 		before = Compose.before, 
 		from = Compose.from;
 
-	var _empty = {}, 
-		reTmpl = /\$\{(\w+)(([\/\|\*\+\-])(\w+))?\}/g, 
+	var reTmpl = /\$\{(\w+)(([\/\|\*\+\-])(\w+))?\}/g, 
 		undef = (function(){ return; })(), 
 		undefinedThis = (function(){
 	        return this; // this depends on strict mode
 	    })();
 
-	var mixin = function(thing, props) {
-		for(var key in props) {
-			if(key in _empty) continue; 
-			thing[key] = props[key];
-		}
-		return thing;
-	},
 	uniqId = function(stem) {
 		return (stem || "thing") +"_"+ (uniqId.count++);
 	};
@@ -33,51 +25,17 @@ define(['lib/compose'], function(Compose){
 			return fn.apply(scope, arguments);
 		};
 	};
-	
-	// shim for Object.keys, using native impl where available
-	var keys = (function(nativeKeys){
-		return nativeKeys ? 
-			function(obj){ return nativeKeys.call(Object, obj)} :
-			function(obj){
-				var names = [];
-				for(var i in obj){
-					if(i in _empty) continue;
-					names.push(i);
-				}
-				return names;
-			}
-	})(Object.keys);
 
-	var arProto = Array.prototype;
-	var forEach = ("forEach" in arProto) ? 
-		// use native foreach, but we can handle arguments, NodeList etc. too
-		function(ar, fn, scope) {
-			return arProto.forEach.call(ar, fn, scope || undefinedThis );
-		} :
-		// shim for foreach
-		function(ar, fn, scope){
-			for(var i=0, len=ar.length; i<len; i++){
-				fn.call(scope || undefinedThis, ar[i], i, ar);
-			}
-		}
-	;
-	var forIn = function(obj, fn, scope){
-		for(var i in obj){
-			if(i in _empty) continue;
-			fn.call(scope || undefinedThis, obj[i], i, obj);
-		}
-	};
+	// make local aliases for object module methods
+	var mixin = object.mixin, 
+		keys = object.keys,
+		forIn = object.forIn, 
+		createObject = object.createObject, 
+		_empty = _empty;
+		
+	// make local alias for array module method
+	var forEach = array.forEach;
 	
-	var createObject = function(thing, props) {
-		var FN = function(){};
-		FN.prototype = thing; 
-		var obj = new FN;
-		if(props) {
-			mixin(obj, props);
-		}
-		return obj;
-	};
-
 	var isArray = function(thing){
 		return (
 			typeof thing == "object"
@@ -156,74 +114,7 @@ define(['lib/compose'], function(Compose){
 		};
 	})();
 	
-	// Augmented Array which maintains a by-id lookup
-	
-	var KeyedArray = Compose(Array, {
-		_register: function(entry){
-			this._byId[entry.id] = entry;
-		}, 
-		_unregister: function(entry, idx, coln){
-			delete this._byId[entry.id];
-		}, 
-		push: before(function(){
-			forEach(arguments, function(entry){
-				this._register(entry);
-			}, this);
-		}),
-		unshift: before(function(){
-			forEach(arguments, function(entry){
-				this._register(entry);
-			}, this);
-		}),
-		pop: before(function(){
-			var entry = this[this.length-1];
-			entry && this._unregister(entry);
-		}),
-		shift: before(function(){
-			var entry = this[0];
-			entry && this._unregister(entry);
-		}),
-		add: function(entry){
-			return this.push(entry);
-		},
-		remove: function(entry){
-			var idx = this.indexOf(entry);
-			if(idx > -1) {
-				this.splice(idx, 1);
-				// this._unregister(entry);
-			}
-		},
-		byId: function(id) {
-			return this._byId[id];
-		}, 
-		concat: function(ar) {
-			var newAr = this.slice();
-			// add our byId dict. 
-			var byId = newAr._byId = mixin({}, this._byId);
-			// add in ids for the array we concated on
-			forEach(ar, function(entry){
-				newAr.push(entry);
-				byId[entry.id] = entry;
-			}, this);
-			return newAr;
-		}, 
-		splice: before(function(idx, howMany) {
-			// unregister items to be removed
-			for(var i=idx; i<Math.min(this.length, idx+howMany); i++){
-				this._unregister(this[i]);
-			}
-			for(var j=2; j<arguments.length; j++){
-				this._register(arguments[j]);
-			}
-		})
-	}, function(){
-		this._byId = {};
-		if(arguments.length){
-			this.push.apply(this, arguments);
-		}
-		return this;
-	});
-	
+
 	// console.log("lang module returning exports");
 	return	{
 		mixin: mixin,
