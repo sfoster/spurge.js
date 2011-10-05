@@ -58,6 +58,7 @@ define([
 			this.isRunning = true;
 
 			this.gameTime = 0;
+			this.startTime = +new Date;
 			this.wallLastTimestamp = 0;
 
 			this.lastUpdateTimestamp = Date.now();
