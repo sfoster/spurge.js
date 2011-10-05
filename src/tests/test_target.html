@@ -2,8 +2,11 @@
 	<head>
 		<link rel="stylesheet" type="text/css" href="../css/tester.css"/>
 		<style>
+			body {
+				background-color: #eee;
+			}
 			#box {
-				border: 1px solid blue;
+				background-color: #fff;
 			}
 			#fly {
 				-webkit-transition: box-shadow,background-color 0.05s,0.05s linear;
@@ -37,9 +40,10 @@
 					assets: '../assets'
 				}
 			}, [
-				'lib/domReady', 'lib/touch', 'lib/rendering'
-			], function(domReady, touch, rendering){
+				'lib/domReady', 'lib/touch', 'lib/rendering', 'lib/loop'
+			], function(domReady, touch, rendering, loop){
 				var ua = rendering.ua;
+				var debugAngles = true;
 				console.log("userAgent: ",ua);
 				rotate = function(elm, angle) {
 					// TODO: prefix isn't necessary for latest browser version e.g. FF5
@@ -60,8 +64,8 @@
 
 				domReady(function(){
 					touch.init();
-					var c = document.getElementById("box"), 
-						ctx = c.getContext("2d");
+					var canvasNode = document.getElementById("box"), 
+						ctx = canvasNode.getContext("2d");
 					
 					// initial position
 					var flyNode = document.getElementById("fly"); 
@@ -69,7 +73,7 @@
 					var fly = {
 						domNode: flyNode,
 						_rotationOffset: Math.PI / 2, // account for orientation of our graphic vs. origin of the angle
-						speed: 2,
+						speed: 100, // 100px per second
 						rotateTo: function(radians){
 							this.rotation = radians;
 							var deg = radiansToDegrees(radians + this._rotationOffset);
@@ -82,7 +86,7 @@
 							ns.left = x+"px";
 							ns.top = y+"px";
 						},
-						update: function(){
+						update: function(elapsedTime){
 							var target = this.target;
 							if(! target) {
 								return;
@@ -104,28 +108,31 @@
 									Math.pow(Math.abs(target.x - this.x), 2) + 
 									Math.pow(Math.abs(target.y - this.y), 2)
 								);
-								speed = Math.min(this.speed, distance), 
+								speed = Math.min(this.speed * elapsedTime, distance), 
 							 	moveY = speed * Math.cos(angle), 
 								moveX = speed * Math.sin(angle); 
-
-							// console.log("distance: %s, speed: %s", distance, speed);
+							
+							// console.log("since: %s, distance: %s, speed: %s", elapsedTime, distance, speed);
 							// console.log("move from: %s/%s to %s/%s", this.x, this.y, target.x, target.y);
 							// console.log("move by: %s/%s to %s/%s", moveX, moveY, this.x+moveX, this.y+moveY);
 							
-							ctx.beginPath();
-							ctx.strokeStyle = "#00cc00";
-							ctx.moveTo(this.x, this.y);
-							ctx.lineTo(this.x, target.y);
-							ctx.stroke();
-							
-							ctx.moveTo(this.x, this.y);
-							ctx.lineTo(target.x, fly.y);
-							ctx.stroke();
-							
-							ctx.strokeStyle = "#ff0000";
-							ctx.moveTo(this.x, this.y);
-							ctx.lineTo(this.x + moveX, this.y + moveY);
-							ctx.stroke();
+							// draw our progress
+							if(debugAngles){
+								ctx.beginPath();
+								ctx.strokeStyle = "#00cc00";
+								ctx.moveTo(this.x, this.y);
+								ctx.lineTo(this.x, target.y);
+								ctx.stroke();
+
+								ctx.moveTo(this.x, this.y);
+								ctx.lineTo(target.x, fly.y);
+								ctx.stroke();
+
+								ctx.strokeStyle = "#ff0000";
+								ctx.moveTo(this.x, this.y);
+								ctx.lineTo(this.x + moveX, this.y + moveY);
+								ctx.stroke();
+							}
 							
 							// update our coordinates
 							this.placeAt(this.x + moveX, this.y + moveY);
@@ -137,29 +144,35 @@
 					};
 					fly.placeAt(200,50);
 					
-					var loopItv = null;
+					var gameLoop = new loop.Loop({
+						onTick: function(elapsed){
+							var msg = "time since: " + elapsed;
+							document.getElementById("info").innerHTML = msg;
+							fly.update(elapsed);
+						}
+					});
 					
-					document.addEventListener("mouseup", function(evt){
-						ctx.clearRect(0,0,c.width,c.height);
+					gameLoop.startLoop();
+
+					document.getElementById("container").addEventListener("mouseup", function(evt){
+						ctx.clearRect(0,0,canvasNode.width,canvasNode.height);
 						// direction to head
 						var target = {
-							x: evt.pageX, 
-							y: evt.pageY
+							x: evt.clientX, 
+							y: evt.clientY
 						};
-						
+						// calculate mouse position offsets
+						for(var node=evt.target; node && node.clientTop; node = node.offsetParent){
+							target.x -= node.offsetLeft;
+							target.y -= node.offsetTop;
+						}
 						// draw a box where our target is
 						ctx.fillStyle = "#ff9999";
-						ctx.fillRect(Math.min(c.width, target.x)-2, Math.min(c.height, target.y)-2, 4, 4);
-						
+						ctx.fillRect(Math.min(canvasNode.width, target.x)-2, Math.min(canvasNode.height, target.y)-2, 4, 4);
+						// console.log("marking click target at: ", JSON.stringify(target));
+						// console.dir(evt.target);
 						fly.setTarget(target);
 						
-						if(loopItv) {
-							clearInterval(loopItv);
-						}
-						loopItv = setInterval(function(){
-							fly.update();
-						}, 1000/60);
-
 					}, false);
 					
 					
@@ -168,7 +181,11 @@
 		</script>
 	</head>
 	<body>
-		<canvas id="box" width="500" height="200" class="abs"></canvas>
-		<div id="fly" class="abs" style="top: 60px; left: 60px"></div>
+		<div style="position: relative; padding-bottom: 25px; width: 500px;" id="container">
+			<div id="info" class="abs" style="top: auto; bottom: 0; height: 25px; width: 100%; border: 1px dotted #999"></div>
+			<canvas id="box" width="500" height="200"></canvas>
+			<div id="fly" class="abs" style="top: 60px; left: 60px"></div>
+		</div>
+		
 	</body>
 </html>
