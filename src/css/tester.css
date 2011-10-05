@@ -36,7 +36,20 @@
 .scene-ended {
 	background-color: #333;
 }
+
+.abs {
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
 .sprite {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 20;
+}
+.point {
 	position: absolute;
 	top: 0;
 	left: 0;
