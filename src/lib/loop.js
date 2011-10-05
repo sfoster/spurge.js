@@ -9,10 +9,10 @@ define([
 		from = Compose.from;
 
 	var exports = {
-		monitorStats: true
+		monitorStats: false
 	}
 
-	var requestAnimFrame = (function(){
+	var requestAnimFrame = exports.requestAnimFrame = (function(){
 		return  window.requestAnimationFrame       || 
 			window.webkitRequestAnimationFrame     || 
 			window.mozRequestAnimationFrame        || 
@@ -36,55 +36,49 @@ define([
 	},
 	{
 		fps: 1000/60, // default frames/sec.
+		maxStep: 0.05,
+		
+		// loop/timer component
+		// startLoop, stopLoop
+		//  will fire onTick each tick, and pass in the time elapsed
 
+		// loopage is via repeated calls to requestAnimationFrame
+		
+		tick: function(){
+			var wallCurrent = Date.now();
+			var wallDelta = (wallCurrent - this.wallLastTimestamp) / 1000;
+			this.wallLastTimestamp = wallCurrent;
+			
+			var gameDelta = Math.min(wallDelta, this.maxStep);
+			this.gameTime += gameDelta;
+			return gameDelta;
+		},
 		startLoop: function(){
 			console.log("lib/Loop startLoop");
 			this.isRunning = true;
-			// build the main loop
-			this.runLoop = this.prepareLoop();
-			
-			this.startTime = (new Date()).getTime();
-			
-			var self = this;
-			var onEachFrame = function(cb) {
-				// only re-request anim frame if we're still running
-				var _cb = function() { 
-					if(self.isRunning){
-						cb(); requestAnimFrame(_cb); 
-					}
-				};
-				_cb();
-			};
-			// kick it off
+
+			this.gameTime = 0;
+			this.wallLastTimestamp = 0;
+
+			this.lastUpdateTimestamp = Date.now();
+
 			console.log("lib/Loop kick it off");
-			onEachFrame(lang.bind(this, this.runLoop));
+			// build the main loop and kick it off
+			this.prepareLoop()();
 		},
 		prepareLoop: function(){
-			// experiment, with the scene as host of the main game loop
-			// as we have some "scenes" that don't need a loop at all,
-			var fps = 60;
-			var loops = 0, skipTicks = 1000 / fps,
-				maxFrameSkip = 10,
-				nextGameTick = (new Date).getTime(), 
-				frameCount = 0;
-				
-			return function() {
-				loops = 0;
-				var now = (new Date).getTime();
-				while (now > nextGameTick) {
-					// we'll update more than we'll draw..
-					exports.updateStats && updateStats.update();
-					this.update();
-					nextGameTick += skipTicks;
-					loops++;
+			var gameLoop = lang.bind(this, function(){
+				if(this.isRunning){
+					this.onTick( this.tick() );
+					requestAnimFrame(gameLoop);
 				}
-				
-				// exports.renderStats && renderStats.update();
-				this.redraw(++frameCount);
-			};
-
-			// this.update();
-			// this.redraw();
+			});
+			return gameLoop;
+		},
+		onTick: function(elapsed){
+			// stub
+			// 	this.update(elapsed);
+			// 	this.redraw();
 		},
 
 		stopLoop: function(){
