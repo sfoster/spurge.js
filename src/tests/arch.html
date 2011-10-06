@@ -117,11 +117,12 @@
 							stack = this.stack, 
 							renderQ = this.rootComponent.renderQueue;
 						// console.log("Game update, ", now, startTime+2000, now > startTime+1000);
-						if(now > startTime+10000){
-							this.clock.stopLoop();
-							console.info("Stopping");
-							return;
-						}
+						// if(now > startTime+10000){
+						// 	this.clock.stopLoop();
+						// 	console.info("Stopping");
+						// 	return;
+						// }
+
 						// walk the graph
 						this.traverse(function(c){
 							if("function" == typeof c.update){
