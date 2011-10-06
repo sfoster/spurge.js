@@ -10,39 +10,99 @@
 					assets: '../assets'
 				}
 			}, [
-				'lib/state',
 				'lib/lang',
 				'lib/compose',
-				'lib/state',
-			], function(rw, lang, Compose, Stateful){
-				var _Game = Compose({
-					awake: false
-				}, Stateful, function(){
-					console.log("state test ctor");
-					this.registerState("awake", {
-						type: "awakeness",
-						enter: function(){ console.log(this.name+ "state enter"); },
-						exit: function(){ console.log(this.name+ "state exit"); },
-					});
-					this.registerState("asleep", {
-						type: "awakeness",
-						active: true,
-						enter: function(){ console.log(this.name+ " state enter"); },
-						exit: function(){ console.log(this.name+ "state exit"); },
-					});
-					this.registerState("happy", {
-						enter: function(){ console.log(this.name+ " state enter"); },
-						exit: function(){ console.log(this.name+ "state exit"); },
-					})
-				}); 
-				var game = window.game = new _Game;
+				'lib/Graph',
+				'lib/state'
+			], function(lang, Compose, Graph, Stateful){
+				var graph = new Graph();
 				
+				// a behavior can lend states to a component
+				// we need a simple joint-point to bind one to the other
+				// a state is, exactly, ...what?
+				// a hook
+				// var AwakeBehavior = Compose(Graph.Component, {
+				// 	onAttach: function(cmp) {
+				// 		console.info(this.id + " was attached to: ", cmp.id);
+				// 		var bvr = this;
+				// 		cmp._awakeTime=+new Date;
+				// 		
+				// 		cmp.setState = function(name){
+				// 			bvr.enterState(name);
+				// 		}
+				// 	},
+				// 	onDetach: function(cmp) {
+				// 		console.info(this.id + " was attached to: ", cmp.id);
+				// 		var bvr = this;
+				// 		delete cmp.setState;
+				// 	}, 
+				// 	update: function(){
+				// 		
+				// 	}
+				// }, function(){
+				// 	console.log("state test ctor: ", this.id);
+				// });
+
+
+				Stateful.defineState("awake", {
+					follows: [],
+					type: "wakefullness",
+					active: true, // this is the default of this set; a component with this state enters it automatically when attached
+					enter: function(target){
+						console.log(this.name+ "state exit");
+					},
+					exit: function(target){ console.log(this.name+ "state exit"); }
+				});
+				Stateful.defineState("asleep", {
+					follows: [],
+					type: "wakefullness",
+					enter: function(target){ console.log(this.name+ " state enter"); },
+					exit: function(target){ console.log(this.name+ "state exit"); }
+				});
+				// I can be happy, and awake (and asleep I guess)
+				// entering happy state shouldn't exit those
+				// I only cease to be happy when I exit alive state (unless I die happy:)
+				Stateful.defineState("happy", {
+					follows: [],
+					type: "wakefullness",
+					enter: function(target){ console.log(this.name+ " state enter"); },
+					exit: function(target){ console.log(this.name+ "state exit"); }
+				});
 				
-				// game.start();
+				smiley = new Graph.Component({
+					graph: graph,
+					id: "smiley", 
+					attachState: function(name){
+						var states = this._statesByName || (this._statesByName = {});
+					}
+				});
+				
+				window.stateMgr = new (Compose(Graph.Component, Stateful))({
+					graph: graph, 
+					id: "stateManager"
+				});
+				
+				// the component needs to be the one managing its own state
+				// the game could define them
+				// but the component needs the ability to attach and detach states from itself
+				stageMgr.attachState(smiley, "awake");
+				stageMgr.attachState(smiley, "asleep");
+				stageMgr.attachState(smiley, "happy");
+				
+				// awake = new AwakeBehavior({
+				// 	graph: graph,
+				// 	id: "awakeBehavior",
+				// 	awake: false
+				// });
+				// smiley.attachComponent(awake);
+				
 			}); 
 		</script>
 	</head>
 	<body>
 		<div id="playarea" style="float:left;margin-right:10px;"></div>
+		<h1>Status: Busted</h1>
+		<p>Not sure if a formal state manager and state objects are going to be necessary. 
+		I like the idea of applying state and moving through states.. but it seems like an unnecessary and leaky abstraction - not sure if state and the component it applies to can really be teased apart into seperate things.</p>
 	</body>
 </html>
