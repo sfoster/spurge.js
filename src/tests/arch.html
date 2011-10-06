@@ -2,11 +2,14 @@
 	<head>
 		<link rel="stylesheet" type="text/css" href="../css/tester.css"/>
 		<style>
-		.point {
-			position: absolute;
-			top: 0;
-			left: 0;
-			z-index: 20;
+		.fly {
+			-webkit-transition: box-shadow,background-color 0.05s,0.05s linear;
+			background: url('../assets/fly1.png') no-repeat;
+			width: 32px;
+			height: 32px;
+			z-index: 10;
+			margin-top: -16px;
+			margin-left: -16px;
 		}
 		</style>
 		<script src="../lib/curl.js"></script>
@@ -34,6 +37,37 @@
 					from = Compose.from;
 
 				console.log("define window.game");
+				
+				
+				var types = {
+					"Creep": 	 ["position",	"movement",	"render",	"script",	"target",	"physics"],
+					"Obstacle":  ["position",  				"render", 							"physics"],
+					"Ray": 		 ["position",				"render",				"target"			 ],
+					"Projectile":["position",	"movement",	"render",	"script",	"target",	"physics"],
+					"Camera": 	 ["position",	"movement"												 ],
+					"State": 	 [ 										"script"						 ],
+				};
+				
+				// position: 
+				// 		tracks x/y coords in the world
+				// movement: 
+				// 		has velocity which updates x/y.
+				// render: 
+				// 		gets rendered (and re-rendered) to the stage
+				// script: 
+				// 		some code that might listen for predefined events
+				// target: 
+				// 		maintains coords of a target	
+				
+				// spec for a Creep: 
+				// 		(args we'll pass to position component when we attach)
+				// 	position: x,y, orientation-or-rotation: r
+				// 		(args we'll pass to movement component when we attach)
+				// 		(can't have movement without position)
+				// 	movement 
+				// 		speed: n, // how often movement occurs
+				
+				
 				var Game = Compose(Graph, function(){
 					console.log("game ctor");
 					var defaultSequence = [
@@ -56,11 +90,13 @@
 				}, {
 					init: after(function(){
 						console.log("Game init");
+						var game = this;
+						loop.monitorStats = true;
 						this.clock = new loop.Loop({
-							familyName: "universe",
-							id: "clock",
-							update: lang.bind(this, this.update),
-							redraw: lang.bind(this, this.render),
+							onTick: function(elapsed){
+								game.update(elapsed);
+								game.render();
+							}
 						});
 					}),
 					prepare: function(){
@@ -70,6 +106,8 @@
 
 						// move to rootComponent's initialRender
 						
+						// add rendering behavior to root (think documentElement)
+						this.rootComponent.attachComponent(renderManager);
 						this.attachTo(
 							{ id: "physics" }
 						);
@@ -80,7 +118,9 @@
 						console.log("adding creep");
 						this.attachTo(new Creep({
 							graph: this,
-							id: "creep1"
+							id: "creep1",
+							x: 100,
+							y: 100
 						}));
 						console.log("/adding creep");
 						
@@ -93,13 +133,22 @@
 						console.log("kick off the update cycle");
 						this.clock.startLoop();
 					},
-					update: function(){
-						var now = this.timestamp = +new Date;
-
+					update: function(elapsed){
+						var now = this.timestamp = +new Date, 
+							startTime = this.clock && this.clock.startTime,
+							stack = this.stack, 
+							renderQ = this.rootComponent.renderQueue;
+						// console.log("Game update, ", now, startTime+2000, now > startTime+1000);
+						if(now > startTime+10000){
+							this.clock.stopLoop();
+							console.info("Stopping");
+							return;
+						}
 						// walk the graph
 						this.traverse(function(c){
 							if("function" == typeof c.update){
-								c.update(now, stack);
+								c.update(elapsed, stack);
+								c.needsRender && renderQ.push(c);
 							}
 						});
 					},
@@ -121,54 +170,60 @@
 				game.Entity = Compose(game.Component, Renderable, {
 					update: from(game.Component, "update"),
 					initialRender: from(Renderable, "render"),
-					render: from(Renderable, "update")
+					render: from(Renderable, "update"),
+					set: function(args){
+						// console.log("setting: ", JSON.stringify(args));
+						var dirty = this._dirty || (this._dirty = {});
+						for(var i in args){
+							this[i] = args[i];
+							dirty[i] = true;
+						}
+					},
+					onAttach: function(attachee){
+						console.log("attached: " + this.id + ", attempting initialRender in: ", attachee.node);
+						if(this.initialRender && attachee.node){
+							this.initialRender(attachee.node);
+						}
+					},
+					onDetach: function(){
+						this.unRender && this.unRender();
+					}
 				});
 				console.log("/defining game.Entity");
 
-				console.log("defining renderer component, to extend game.Component: ", game.Component);
-				var RenderManager = Compose.create(game.Component, {
+				// console.log("defining renderer component, to extend game.Component: ", game.Component);
+				var renderManager = Compose.create(game.Component, {
 					graph: game,
+					stageId: "playarea", 
 					onAttach: function(renderRoot){
 						// the renderer has been attached to a component
+						// THIS is assuming we'll get attached say to the rootComponent
 						renderRoot.renderQueue = [];
 						// the renderer provides a render method for the components
 						// it is attached to
 						renderRoot.render = function(){
 							// the renderQueue is assembled each update
-							// all "dirty" components the need re-rendering get added
-							// the queue is consumed
+							// all "dirty" components set a needsRender flag, and they get added to the queue
+							// the queue is consumed during the render phase
 							
-							// TODO: how do they get added? 
-							// does every renderable component have the renderer attached? 
-							// in which case, why the queue? Why not just loop back over the graph 
-							// and call render on anything that has a render method
+							// most scenarios probably just have a single renderer, with a render queue on the rootComponent
+							// but if a components wants to handle its own rendering differently somehow, 
+							// it could maintain its own renderer
 							
-							// Or, if we have one renderer, components that need rendering do...what? 
-
-							// the renderQueue is maintained by the renderer
-							// 	it adds components to it when it is attached? hmm.
-							// 	we already have an attachList that serves that function
-							
-							// it makes sense to have a single render queue
-							// 	we can only render one component at a time, and they need to be done in sequence
-							// 	does a component put itself on the queue with an event? schedule-render
-							// 	that would let stuff render itself once, 
-							// 	then stay unchanged (in a DOM renderer), only re-rendering when some change occurs
-							// if components have a dirty() method, we can lookup dirtiness propertyies to see if that implies a renderable change
-							// if so, they get pushed onto the renderQ. 
-							
-							
-							// an event seems the most likely impl. 
-							// as the component could be at any level in the heirarchy
-							// the component wants to communicate something, to a renderer which it didn't not itself create
 							var renderQ = this.renderQueue, 
 								ent;
 							while((ent = renderQ.pop())){
+								// console.log("render on: " + ent.id);
 								ent.render();
 							};
 							// this.timeNode.innerHTML = this.timestamp;
 							ent = null;
 						};
+						if(renderRoot.node){
+							this.stageNode.appendChild(renderRoot.node)
+						} else {
+							renderRoot.node = this.stageNode;
+						}
 						// this.timeNode = document.getElementById("timestamp");
 					},
 					onDetach: function(renderRoot){
@@ -180,6 +235,7 @@
 					},
 					update: function(){
 						// when the rendering component is updated, what happens? 
+						// on first update, call initialRender
 					}
 				}, function(){
 						if(!this.graph) {
@@ -187,7 +243,7 @@
 						}
 						if(!this.stageNode) {
 							if(this.stageId) {
-								this.stageNode = document.getElementById("playarea");
+								this.stageNode = document.getElementById(this.stageId);
 							} else {
 								throw new Error("Renderer created without a stageNode or stageId");
 							}
@@ -200,12 +256,10 @@
 				var Creep = Compose(game.Entity, {
 					x: 0, 
 					y: 0,
+					className: "sprite thing fly",
 					type: "creep",
 					init: after(function(){
 						console.log("Creep init");
-						var node = this.domNode = document.createElement("div");
-						node.className = "static-spot point";
-						game.stageNode.appendChild(node);
 						
 						// add a behavior
 						this.attachComponent(sineWave || (sineWave = new SineWave({
@@ -221,25 +275,38 @@
 				var Creeplet = Compose(Creep, {
 					init: function(){
 						console.log("Creep init");
-						var node = this.domNode = document.createElement("div");
-						node.className = "static-spot point";
-						game.stageNode.appendChild(node);
+
+						// add rendering behavior
+						this.attachComponent(renderManager);
 					},
 				})
 				
 				var SineWave = Compose(game.Component, {
-					y: 0,
-					x: 0,
 					type: "sine-wave",
-					update: function(timestamp, stack){
-						var y = this.y,
-							x = this.x,
-							parent = stack.get("parent");
-						parent.x = x;
-						parent.y = 50 * Math.sin(y);
-						p
-						this.y = y >= 100 ? 0 : y+0.1;
-						this.x = x >= 800 ? 0 : x+4;
+					onAttach: function(ent){
+						ent.origY = ent.y;
+						ent.origX = ent.x;
+						ent.elevation = 0;
+					},
+					update: function(elapsed, stack){
+						// update the attached component's coordinates
+						var ent = stack.get("parent"), 
+							x = ent.x,
+							y = ent.y, 
+							magnitude = 50;
+						
+						// distance
+						// n deg. per second
+						ent.elevation += 3 * elapsed;
+						// console.log("elevation set to: " + ent.elevation);
+						// prepare values for next update
+						y = ent.origY + (magnitude * Math.sin(ent.elevation));
+						x = x >= 800 ? 0 : x+4;
+
+						ent.set({
+							x: x, y: y
+						});
+						ent.needsRender = true;
 						// console.log("sineWave: ", this._parent.x, this._parent.y);
 					}
 				})

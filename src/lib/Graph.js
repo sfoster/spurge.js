@@ -62,7 +62,7 @@ define(['lib/lang', 'lib/compose'], function(lang, Compose){
 			return list;
 		},
 		_traverse: function(nodes, cb) {
-			console.log("traversing, with: ", nodes.componentId);
+			// console.log("traversing, with: ", nodes.componentId);
 			var node, 
 				stack = this.stack;
 			for(var i=0, len=nodes.length; i<len; i++){
