@@ -1,6 +1,6 @@
 define([
 		'lib/lang',
-		'lib/Compose'
+		'lib/compose'
 	], function (lang, Compose){
 	
 	// by remy, from: https://gist.github.com/753003

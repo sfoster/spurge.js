@@ -1,4 +1,4 @@
-define(['lib/lang', 'lib/Compose'], function(lang, Compose){
+define(['lib/lang', 'lib/compose'], function(lang, Compose){
 	window.lang = lang;
 	describe("lang.KeyedArray", function() {
 		var karray;
