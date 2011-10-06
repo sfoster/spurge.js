@@ -287,6 +287,7 @@
 						ent.origY = ent.y;
 						ent.origX = ent.x;
 						ent.elevation = 0;
+						ent.direction = 1;
 					},
 					update: function(elapsed, stack){
 						// update the attached component's coordinates
@@ -295,13 +296,18 @@
 							y = ent.y, 
 							magnitude = 50;
 						
-						// distance
+						// y-distance
 						// n deg. per second
 						ent.elevation += 3 * elapsed;
 						// console.log("elevation set to: " + ent.elevation);
 						// prepare values for next update
 						y = ent.origY + (magnitude * Math.sin(ent.elevation));
-						x = x >= 800 ? 0 : x+4;
+						if(x >= 800) {
+							ent.direction *= -1;
+						}
+						// x-distance
+						// nominal 100px per second = 100/60
+						x = x += ent.direction * elapsed * 100;
 
 						ent.set({
 							x: x, y: y
