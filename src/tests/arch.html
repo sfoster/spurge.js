@@ -36,40 +36,17 @@
 					before = Compose.before, 
 					from = Compose.from;
 
-				console.log("define window.game");
-				
-				
-				var types = {
-					"Creep": 	 ["position",	"movement",	"render",	"script",	"target",	"physics"],
-					"Obstacle":  ["position",  				"render", 							"physics"],
-					"Ray": 		 ["position",				"render",				"target"			 ],
-					"Projectile":["position",	"movement",	"render",	"script",	"target",	"physics"],
-					"Camera": 	 ["position",	"movement"												 ],
-					"State": 	 [ 										"script"						 ],
-				};
-				
-				// position: 
-				// 		tracks x/y coords in the world
-				// movement: 
-				// 		has velocity which updates x/y.
-				// render: 
-				// 		gets rendered (and re-rendered) to the stage
-				// script: 
-				// 		some code that might listen for predefined events
-				// target: 
-				// 		maintains coords of a target	
-				
-				// spec for a Creep: 
-				// 		(args we'll pass to position component when we attach)
-				// 	position: x,y, orientation-or-rotation: r
-				// 		(args we'll pass to movement component when we attach)
-				// 		(can't have movement without position)
-				// 	movement 
-				// 		speed: n, // how often movement occurs
-				
+				// maybe end up with something like this? 
+				// var types = {
+				// 	"Creep": 	 ["position",	"movement",	"render",	"script",	"target",	"physics"],
+				// 	"Obstacle":  ["position",  				"render", 							"physics"],
+				// 	"Ray": 		 ["position",				"render",				"target"			 ],
+				// 	"Projectile":["position",	"movement",	"render",	"script",	"target",	"physics"],
+				// 	"Camera": 	 ["position",	"movement"												 ],
+				// 	"State": 	 [ 										"script"						 ],
+				// };
 				
 				var Game = Compose(Graph, function(){
-					console.log("game ctor");
 					var defaultSequence = [
 						"loadContent", 
 						"prepare",
@@ -95,6 +72,7 @@
 						this.clock = new loop.Loop({
 							onTick: function(elapsed){
 								game.update(elapsed);
+								// call render on the game which delegates to the rootComponent
 								game.render();
 							}
 						});
@@ -104,10 +82,10 @@
 						// assets are loaded, now is a good time 
 						// to create components and entities & populate the graph 
 
-						// move to rootComponent's initialRender
-						
 						// add rendering behavior to root (think documentElement)
 						this.rootComponent.attachComponent(renderManager);
+						
+						// this are bogus components.. imagine they were actually implemented
 						this.attachTo(
 							{ id: "physics" }
 						);
@@ -129,8 +107,8 @@
 						console.log("loading assets");
 					},
 					activate: function(){
-						console.log("start clock if we have one");
-						console.log("kick off the update cycle");
+						// start clock if we have one
+						console.log("game.activate: kick off the update cycle");
 						this.clock.startLoop();
 					},
 					update: function(elapsed){
@@ -172,7 +150,8 @@
 					initialRender: from(Renderable, "render"),
 					render: from(Renderable, "update"),
 					set: function(args){
-						// console.log("setting: ", JSON.stringify(args));
+						// by flagging properties as dirty
+						// we can render smarter
 						var dirty = this._dirty || (this._dirty = {});
 						for(var i in args){
 							this[i] = args[i];
@@ -180,7 +159,8 @@
 						}
 					},
 					onAttach: function(attachee){
-						console.log("attached: " + this.id + ", attempting initialRender in: ", attachee.node);
+						console.log("Entity: " + this.id + " attached to a parent component");
+						console.log("Entity attempting initialRender in: ", attachee.node)
 						if(this.initialRender && attachee.node){
 							this.initialRender(attachee.node);
 						}
@@ -199,8 +179,8 @@
 						// the renderer has been attached to a component
 						// THIS is assuming we'll get attached say to the rootComponent
 						renderRoot.renderQueue = [];
-						// the renderer provides a render method for the components
-						// it is attached to
+						// the renderer provides a render method for the components it gets attached to
+						// its the entry point for the rendering phase
 						renderRoot.render = function(){
 							// the renderQueue is assembled each update
 							// all "dirty" components set a needsRender flag, and they get added to the queue
@@ -224,7 +204,6 @@
 						} else {
 							renderRoot.node = this.stageNode;
 						}
-						// this.timeNode = document.getElementById("timestamp");
 					},
 					onDetach: function(renderRoot){
 						// the renderer comp is being detached 
@@ -235,7 +214,6 @@
 					},
 					update: function(){
 						// when the rendering component is updated, what happens? 
-						// on first update, call initialRender
 					}
 				}, function(){
 						if(!this.graph) {
@@ -267,9 +245,7 @@
 						})));
 					}),
 					update: function(){
-						// this.domNode.style.left = this.x +"px";
-						// this.domNode.style.top = (90+this.y) +"px";
-						// console.log("Creep render: ", this.x, this.y, this.domNode.style.cssText);
+						// movement is provided by the sineWave behavior component we attached
 					}
 				});
 				var Creeplet = Compose(Creep, {
@@ -313,14 +289,10 @@
 							x: x, y: y
 						});
 						ent.needsRender = true;
-						// console.log("sineWave: ", this._parent.x, this._parent.y);
 					}
 				})
 
 				game.start();
-				// setTimeout(function(){
-				// 		game.shutdown()
-				// }, 12000);
 			}); 
 		</script>
 	</head>
