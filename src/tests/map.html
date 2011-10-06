@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Q-Tower</title>
+    <style>
+        #playground {
+            position: relative;
+            background: url('../assets/floorTexture.jpg');
+        }
+        #welcomeScreen {
+            display: none!important;
+        }
+        .wall {
+            position: absolute;
+            background: url('../assets/Path60Percent.png') no-repeat;
+        }
+    </style>
+    <script src="../lib/jquery-1.6.1.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../lib/curl.js"></script>
+	<script>
+	    // some <script data-main=""> semantics to reduce this boilerplate 
+		require = curl;
+		require({
+			baseUrl: '..'
+		}, [
+            'lib/lang'
+        ], function(lang){
+            // set map size
+            // fill with background (css)
+            // read map data
+            //  create sprites for each wall/fill area, with approp. class
+            mapData = {
+                paths: [
+                    { x: 1, y: 1, type: "wall" },
+                    { x: 1, y: 2, type: "wall" },
+                    { x: 1, y: 3, type: "wall" },
+                    { x: 2, y: 3, type: "wall" },
+                    { x: 10, y: 1, type: "wall" },
+                    { x: 10, y: 2, type: "wall" },
+                    { x: 10, y: 3, type: "wall" },
+                    { x: 11, y: 3, type: "wall" }
+                ],
+                size: { w: 20, h: 20 } // 20 cols, 20 rows
+            };
+            // e.g. total width = 700; so unit width = 700/20;
+            var node = $("#playground"), 
+                width = parseInt(node.css("width"), 10),
+                height = parseInt(node.css("height"), 10),
+                square = {
+                    width: width / mapData.size.w,
+                    height: height / mapData.size.h,
+                };
+            square.xCoef = square.width;  // height and width should be the same, but..
+            square.yCoef = square.height;
+                
+            console.log("square: ", JSON.stringify(square));
+            function place(coord) {
+                var data = lang.createObject(square, coord);
+                var tmpl = '<div class="${type}" style="width: ${width}px; height: ${yCoef}px; top: ${y*yCoef}px; left: ${x*xCoef}px">${x}/${y}</div>'; 
+                //console.log("place str: ", str);
+                var str = lang.templatize(tmpl, data);
+                $(node).append(str);
+            }
+            for(var i=0, coln=mapData.paths, len=coln.length; i<len; i++) {
+                place(coln[i]);
+            }
+        });	
+	</script>
+</head> 
+<body> 
+  <div id="playground" style="width: 600px; height: 600px;"> 
+    <div id="welcomeScreen" style="width: 700px; height: 250px; position: absolute; z-index: 100;"> 
+    </div> 
+</div> 
+  
+</body> 
+</html> 

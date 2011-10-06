@@ -1,0 +1,148 @@
+<html>
+	<head>
+		<link rel="StyleSheet" href="../css/tester.css">
+		<style>
+			.abs {
+				position: absolute;
+				top: 0;
+				left: 0;
+				z-index: 1;
+			}
+			.note {
+				background-color: #ffc;
+				border: 1px solid #333;
+				padding: 10px;
+				display: inline-block;
+			}
+			.static-crab {
+				width: 50px;
+				height: 50px;
+			}
+			.scene-world {
+				border: 1px dotted #000;
+			}
+			.sprite-bg, .sprite-mg, .sprite-fg {
+				position: absolute;
+				position: top: 0; left: 0;
+				width: 100%;
+				height: 100%;
+			}
+			.sprite-bg {
+				background-color: red;
+			}
+
+			.static-crab .sprite-bg {
+				-moz-transition-property: width, height, box-shadow, left, top;
+				-moz-transition-duration: 1s;
+				-moz-transition-timing-function: linear;
+				-webkit-transition-property: width, height, box-shadow, left, top;
+				-webkit-transition-duration: 1s;
+				-webkit-transition-timing-function: ease;
+				-o-transition-property: width, height, box-shadow, left, top;
+				-o-transition-duration: 1s;
+				-o-transition-timing-function: linear;
+				background-color: transparent;
+				width: 10px;
+				height: 10px;
+				left: 20px;
+				top: 20px;
+				background-position: 0 -50px;
+
+				box-shadow:	0 0 10px #0ff;
+				-webkit-border-radius: 	25px;
+				border-radius: 			25px; 
+				-moz-border-radius: 	25px;
+			}
+			.static-crab.gothit .sprite-bg {
+				-moz-transition-property: width, height, box-shadow, left, top;
+				-moz-transition-duration: 0.1s;
+				-moz-transition-timing-function: ease-out;
+				-webkit-transition-property: width, height, box-shadow, left, top;
+				-webkit-transition-duration: 0.1s;
+				-webkit-transition-timing-function: ease-out;
+				-o-transition-property: width, height, box-shadow, left, top;
+				-o-transition-duration: 0.1s;
+				-o-transition-timing-function: ease-out;
+
+				width: 40px;
+				height: 40px;
+				margin: 0px;
+				left: 5px; top: 5px;
+
+				box-shadow:	0 0 25px #0ff;
+				-moz-box-shadow: 	0 0 25px #0ff;
+			}
+		</style>
+		<script src="../lib/curl.js"></script>
+		<script src="../lib/jquery-1.6.1.js" type="text/javascript" charset="utf-8"></script>
+		<script>
+			// some <script data-main=""> semantics to reduce this boilerplate 
+			var game = {};
+			
+			require = curl;
+			require({
+				baseUrl: '..',
+				paths: {
+					assets: '../assets'
+				}
+			}, [
+				'lib/lang',
+				'lib/compose',
+			], function(lang, Compose){
+
+				var after = Compose.after, 
+					before = Compose.before, 
+					from = Compose.from;
+				
+				function addClass(node, clz){
+					console.log("addClass: ", node, clz);
+					var classStr = clz + " " + node.className.split(clz).join(''); 
+					node.className = classStr.replace(/\s+/g, ' ');
+				}
+				function removeClass(node, clz){
+					var classStr = node.className.split(clz).join(''); 
+					node.className = classStr.replace(/\s+/g, ' ');
+				}
+				$(function(){
+					var node = document.getElementById("crab"), 
+						elms = [],
+						cnodes = node.childNodes;
+						for(var i=0; i<cnodes.length; i++){
+							if(cnodes[i].nodeType !== 1) continue;
+							elms.push(cnodes[i]);
+						}
+						var bg = elms.shift(), 
+						mg = elms.shift(), 
+						fg = elms.shift();
+					
+					var timer;
+					$(node).click(function(){
+						if(timer) {
+							clearTimeout(timer);
+						} else {
+							addClass(node, 'gothit');
+						}
+						// or use ontrantitionend?
+						timer = setTimeout(function(){
+							removeClass(node, 'gothit');
+							timer = null;
+						}, 500);
+					});
+				});
+			});
+			
+		</script>
+	</head>
+	<body style="margin:0;padding:0;">
+		<div id="playarea" style="height: 300px; margin-right:10px;">
+			<div class="scene scene-world" style="width: 640px; height: 480px; ">
+				<div class="sprite static-crab" id="crab" style="left: 45.776580069214106px; top: 86.1872263927944px;">
+					<div class="sprite-bg" style=""></div>
+					<div class="sprite-mg" style="background-image: url(../assets/crab.png); background-attachment: initial; background-origin: initial; background-clip: initial; background-color: initial; background-position: 0px 0px; background-repeat: no-repeat no-repeat; "></div>
+					<div class="sprite-fg"></div>
+				</div>
+			</div>
+			<div class="note abs" style="left:120px;top:80px;z-index: 11">Click the crab dude to preview a 'hit' effect using CSS3 transitions</div>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+	"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+	<title>Jasmine Spec Runner</title>
+	<link rel="shortcut icon" type="image/png" href="./lib/jasmine_favicon.png">
+	<link rel="stylesheet" type="text/css" href="./lib/jasmine.css">
+
+
+	<script type="text/javascript" src="./lib/jasmine.js"></script>
+	<script type="text/javascript" src="./lib/jasmine-html.js"></script>
+
+	<script src="../lib/curl.js"></script>
+	<script>
+		require = curl;
+		require({
+			baseUrl: '..',
+			paths: {
+				assets: '../assets',
+				tests: './tests'
+			}
+		}, [
+			'lib/domReady',
+			// include spec files here
+			'tests/spec/langSpec',
+			'tests/spec/GraphSpec',
+			'tests/spec/StateSpec',
+		], function(domReady){
+			domReady(function(){
+				var jasmineEnv = jasmine.getEnv();
+				jasmineEnv.updateInterval = 1000;
+
+				var trivialReporter = new jasmine.TrivialReporter();
+
+				jasmineEnv.addReporter(trivialReporter);
+
+				jasmineEnv.specFilter = function(spec) {
+					return trivialReporter.specFilter(spec);
+				};
+
+				jasmineEnv.execute();
+			});
+		}); 
+	</script>
+</head>
+
+<body>
+</body>
+</html>
