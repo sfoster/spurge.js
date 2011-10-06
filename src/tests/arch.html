@@ -279,7 +279,7 @@
 						// console.log("elevation set to: " + ent.elevation);
 						// prepare values for next update
 						y = ent.origY + (magnitude * Math.sin(ent.elevation));
-						if(x >= 800) {
+						if(x >= 800 || x <= 0) {
 							ent.direction *= -1;
 						}
 						// x-distance
