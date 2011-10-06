@@ -1,4 +1,4 @@
-define(['lib/Compose'], function(Compose){
+define(['lib/compose'], function(Compose){
 
 	describe("Compose", function() {
 		// Compose should: 

@@ -1,6 +1,6 @@
 define([
 		'lib/lang',
-		'lib/Compose',
+		'lib/compose',
 		'lib/stats'
 	], function (lang, Compose, Stats){
 	

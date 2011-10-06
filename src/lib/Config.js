@@ -1,4 +1,4 @@
-define(["lib/lang", "lib/Compose"], function(lang, Compose){
+define(["lib/lang", "lib/compose"], function(lang, Compose){
 	// summary:
 	// 	a Config class with some defaults
 	
