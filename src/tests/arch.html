@@ -318,9 +318,9 @@
 				})
 
 				game.start();
-				setTimeout(function(){
-					game.shutdown()
-				}, 12000);
+				// setTimeout(function(){
+				// 		game.shutdown()
+				// }, 12000);
 			}); 
 		</script>
 	</head>
@@ -331,7 +331,5 @@
 		<input type="button" value="start" onclick="game.start();">
 		&nbsp;
 		<input type="button" value="stop" onclick="game.shutdown('ended');">
-		&nbsp;
-		<input type="button" value="menu mode" onclick="game.enterState('menu');">
 	</body>
 </html>
